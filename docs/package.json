@@ -1,0 +1,21 @@
+{
+  "name": "resume-auto-fill-assistant",
+  "private": true,
+  "version": "2.0.0",
+  "description": "简历自动填写助手 - AI驱动的智能简历助手，支持多款国产大模型",
+  "keywords": ["简历自动填写", "Chrome扩展", "AI驱动", "DeepSeek", "通义千问", "Kimi", "智谱GLM"],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "ant-design-vue": "^4.2.6",
+    "vue": "^3.5.24"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.3",
+    "vite": "^5.0.11"
+  }
+}
