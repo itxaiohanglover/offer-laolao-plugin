@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./icons/icon_128x128.png" alt="Offer 捞捞 Logo" width="200">
+  <img src="./assets/logo.png" alt="Offer 捞捞 Logo" width="200">
 </p>
 
 # 🚀 Offer 捞捞 - 简历自动填写助手智能浏览器插件
