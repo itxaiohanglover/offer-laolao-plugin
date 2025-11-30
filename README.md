@@ -1,10 +1,16 @@
+<p align="center">
+  <img src="icons/logo.png" alt="Offer 捞捞 Logo" width="200">
+</p>
+
 # 🚀 Offer 捞捞 - 简历自动填写助手智能浏览器插件
 
 > 一款功能强大的 Chrome 浏览器扩展，支持智能解析简历、手动填写双模式，并提供 **AI 智能字段匹配** 和 **字段级精准填充** 功能，帮助求职者在各大招聘网站上快速、准确地完成简历填写。
 
-![版本](https://img.shields.io/badge/版本-1.3-blue)
+![版本](https://img.shields.io/badge/版本-1.0-blue)
 ![Chrome](https://img.shields.io/badge/Chrome-Extension-green)
 ![Manifest](https://img.shields.io/badge/Manifest-V3-orange)
+
+🌐 **在线访问**：[https://resume-extension-website.vercel.app/](https://resume-extension-website.vercel.app/)
 
 ## ✨ 核心功能特性
 
@@ -108,40 +114,13 @@
 
 ```
 super_resume/
+├── docs                       # 介绍页
 ├── manifest.json              # Chrome 扩展配置文件 (Manifest V3)
 ├── icons/                     # 扩展图标
-│   ├── icon_16x16.png
-│   ├── icon_48x48.png
-│   ├── icon_64x64.png
-│   ├── icon_128x128.png
-│   └── icon.ico
 ├── src/
 │   ├── background/            # 后台服务脚本
-│   │   └── background.js      # Service Worker，处理 AI 匹配请求
 │   ├── content/               # 内容脚本（注入到网页）
-│   │   └── content.js         # 表单填充、智能预填核心逻辑
 │   └── popup/                 # 弹出页面
-│       ├── popup.html         # 主界面 HTML
-│       ├── popup.js           # 主入口脚本
-│       ├── data-loader.js     # 数据加载模块
-│       ├── components/        # UI 组件
-│       │   ├── mode-tabs.js           # 模式切换选项卡
-│       │   ├── dynamic-items.js       # 动态列表项管理
-│       │   └── resume-upload.js       # 简历上传组件
-│       ├── handlers/          # 事件处理器
-│       │   ├── action-buttons.js      # 操作按钮（保存/重置/导出/预填/AI优化）
-│       │   ├── add-buttons.js         # 添加按钮处理
-│       │   ├── auto-save.js           # 自动保存逻辑
-│       │   └── field-fill-buttons.js  # 字段级填充按钮
-│       └── utils/             # 工具函数
-│           ├── api.js                 # 简历解析 API 调用
-│           ├── form.js                # 表单数据收集
-│           ├── helpers.js             # 通用辅助函数
-│           ├── latex-export.js        # LaTeX 导出功能
-│           ├── model-api.js           # AI 模型 API 调用
-│           ├── notification.js        # 通知提示
-│           ├── prompt-export.js       # 提示词导出与 AI 生成简历介绍
-│           └── storage.js             # 本地存储工具
 └── README.md
 ```
 
@@ -152,7 +131,7 @@ super_resume/
 1. **下载项目**
 
    ```bash
-   git clone https://github.com/your-repo/super_resume.git
+   git clone https://github.com/itxaiohanglover/offer-laolao-plugin.git
    ```
 
    或直接下载 ZIP 并解压
@@ -278,33 +257,7 @@ Edge 浏览器同样支持 Chrome 扩展：
 - **文档格式**：LaTeX（ctex 中文支持）
 - **API 集成**：
   - 阿里云简历解析 API
-  - OpenAI 兼容格式的大模型 API（DeepSeek、Kimi、通义千问等）
-
-## 🔧 开发调试
-
-### 调试弹出页面
-
-1. 点击扩展图标打开弹窗
-2. 右键点击弹窗内容，选择「检查」
-3. 使用 Chrome DevTools 进行调试
-
-### 调试内容脚本
-
-1. 在目标网站打开 DevTools（F12）
-2. 在 Console 中查看 `content.js` 的日志输出
-3. 搜索 "简历自动填写助手" 相关日志
-
-### 调试后台脚本
-
-1. 打开 `chrome://extensions/`
-2. 找到本扩展，点击「Service Worker」链接
-3. 在打开的 DevTools 中查看日志
-
-### 重新加载扩展
-
-1. 打开 `chrome://extensions/`
-2. 找到本扩展，点击刷新图标
-3. 或点击「重新加载」按钮
+  - OpenAI 兼容格式的大模型 API（DeepSeek、豆包（火山引擎）、通义千问等）
 
 ## ⚠️ 注意事项
 
@@ -317,7 +270,7 @@ Edge 浏览器同样支持 Chrome 扩展：
 
 ## 📋 更新日志
 
-### v1.0（）
+### v1.0（当前版本）
 
 ## 📄 开源许可
 
@@ -327,9 +280,9 @@ Edge 浏览器同样支持 Chrome 扩展：
 
 欢迎提交 Issue 和 Pull Request！
 
-- 🐛 发现 Bug？请提交 [Issue](https://github.com/your-repo/super_resume/issues)
-- 💡 有新想法？欢迎提交 [Feature Request](https://github.com/your-repo/super_resume/issues)
-- 🔧 想贡献代码？欢迎提交 [Pull Request](https://github.com/your-repo/super_resume/pulls)
+- 🐛 发现 Bug？请提交 [Issue](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
+- 💡 有新想法？欢迎提交 [Feature Request](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
+- 🔧 想贡献代码？欢迎提交 [Pull Request](https://github.com/itxaiohanglover/offer-laolao-plugin/pulls)
 
 ---
 
