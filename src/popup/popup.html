@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offer捞捞</title>
+    <style>
+      :root {
+        /* 主色调 - 与图标蓝色匹配 */
+        --primary-color: #2b5797;
+        --primary-light: #4a90d9;
+        --primary-lighter: #e8f4fd;
+        --primary-gradient: linear-gradient(135deg, #2b5797 0%, #4a90d9 100%);
+
+        /* 强调色 - 与图标橙色腮红匹配 */
+        --accent-color: #ff8c42;
+        --accent-light: #ffb380;
+        --accent-gradient: linear-gradient(135deg, #ff8c42 0%, #ffb380 100%);
+
+        /* 成功/警告/错误色 */
+        --success-color: #52c41a;
+        --success-light: #f6ffed;
+        --warning-color: #faad14;
+        --warning-light: #fffbe6;
+        --error-color: #ff4d4f;
+        --error-light: #fff2f0;
+
+        /* 中性色 */
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --text-muted: #9ca3af;
+        --border-color: #e5e7eb;
+        --bg-light: #f9fafb;
+        --bg-section: #f3f4f6;
+
+        /* 圆角 */
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+
+        /* 阴影 */
+        --shadow-sm: 0 1px 2px rgba(43, 87, 151, 0.05);
+        --shadow-md: 0 4px 12px rgba(43, 87, 151, 0.1);
+        --shadow-lg: 0 8px 24px rgba(43, 87, 151, 0.15);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "PingFang SC", "Microsoft YaHei", sans-serif;
+        margin: 0;
+        padding: 0;
+        width: 420px;
+        min-height: 500px;
+        overflow-y: auto;
+        background: var(--bg-light);
+        color: var(--text-primary);
+        line-height: 1.5;
+      }
+
+      /* 顶部标题栏 */
+      .header {
+        background: var(--primary-gradient);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: var(--shadow-md);
+        position: sticky;
+        top: 0;
+        z-index: 200;
+      }
+
+      .header-logo {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        background: white;
+        padding: 4px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .header-title {
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-subtitle {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 12px;
+        margin: 2px 0 0 0;
+      }
+
+      /* 模式切换选项卡 */
+      .mode-tabs {
+        display: flex;
+        background: white;
+        border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 68px;
+        z-index: 100;
+      }
+
+      .mode-tabs button {
+        flex: 1;
+        padding: 14px 20px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        transition: all 0.3s ease;
+        position: relative;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .mode-tabs button:hover {
+        color: var(--primary-color);
+        background: var(--primary-lighter);
+      }
+
+      .mode-tabs button.active {
+        color: var(--primary-color);
+        background: var(--primary-lighter);
+      }
+
+      .mode-tabs button.active::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 20%;
+        right: 20%;
+        height: 3px;
+        background: var(--primary-gradient);
+        border-radius: 3px 3px 0 0;
+      }
+
+      /* 内容面板 */
+      .content-panel {
+        padding: 20px;
+      }
+
+      .content-panel h3 {
+        color: var(--primary-color);
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .content-panel h3::before {
+        content: "";
+        width: 4px;
+        height: 20px;
+        background: var(--primary-gradient);
+        border-radius: 2px;
+      }
+
+      /* 区块样式 */
+      .section {
+        margin-bottom: 20px;
+        padding: 18px;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        transition: box-shadow 0.3s ease;
+      }
+
+      .section:hover {
+        box-shadow: var(--shadow-md);
+      }
+
+      .section h4 {
+        margin: 0 0 16px 0;
+        color: var(--text-primary);
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .section h4::before {
+        content: "📋";
+        font-size: 16px;
+      }
+
+      .section h4.upload-title::before {
+        content: "📤";
+      }
+      .section h4.basic-title::before {
+        content: "👤";
+      }
+      .section h4.job-title::before {
+        content: "🎯";
+      }
+      .section h4.edu-title::before {
+        content: "🎓";
+      }
+      .section h4.work-title::before {
+        content: "💼";
+      }
+      .section h4.project-title::before {
+        content: "🚀";
+      }
+      .section h4.skill-title::before {
+        content: "⚡";
+      }
+      .section h4.lang-title::before {
+        content: "🌍";
+      }
+      .section h4.custom-title::before {
+        content: "✨";
+      }
+      .section h4.intro-title::before {
+        content: "💬";
+      }
+      .section h4.ai-title::before {
+        content: "🤖";
+      }
+      .section h4.api-title::before {
+        content: "🔗";
+      }
+
+      /* 表单组 */
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        color: var(--text-primary);
+        background: white;
+        transition: all 0.2s ease;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px var(--primary-lighter);
+      }
+
+      .form-group input::placeholder,
+      .form-group textarea::placeholder {
+        color: var(--text-muted);
+      }
+
+      .form-group textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      .form-group-inline {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .form-group-inline > div {
+        flex: 1;
+        min-width: 0; /* 防止 flex 子元素溢出 */
+      }
+
+      .form-group-inline .form-group {
+        margin-bottom: 0;
+      }
+
+      .form-group-inline input[type="date"] {
+        width: 100%;
+        box-sizing: border-box;
+        min-width: 0;
+      }
+
+      /* 修复带按钮的输入框在 inline 布局中的溢出问题 */
+      .form-group-inline .input-with-button {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .form-group-inline .input-with-button input {
+        min-width: 0;
+        flex: 1;
+      }
+
+      /* 输入框带按钮 */
+      .input-with-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .input-with-button input,
+      .input-with-button select,
+      .input-with-button textarea {
+        flex: 1;
+      }
+
+      .field-fill-btn {
+        background: var(--primary-lighter);
+        border: 1px solid var(--primary-light);
+        color: var(--primary-color);
+        border-radius: var(--radius-sm);
+        padding: 0 12px;
+        height: 38px;
+        min-width: 40px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .field-fill-btn:hover {
+        background: var(--primary-color);
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* 动态列表 */
+      .dynamic-list {
+        margin-bottom: 12px;
+      }
+
+      .dynamic-item {
+        padding: 16px;
+        margin-bottom: 12px;
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        position: relative;
+        transition: all 0.2s ease;
+        overflow: hidden; /* 防止内容溢出 */
+      }
+
+      .dynamic-item:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .dynamic-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .remove-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: var(--error-light);
+        color: var(--error-color);
+        border: 1px solid var(--error-color);
+        border-radius: var(--radius-sm);
+        padding: 4px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .remove-btn:hover {
+        background: var(--error-color);
+        color: white;
+      }
+
+      .add-btn {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .add-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      /* 操作按钮组 */
+      .action-buttons {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .action-buttons button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .action-buttons .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .action-buttons .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .action-buttons .btn-secondary {
+        background: white;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+      }
+
+      .action-buttons .btn-secondary:hover {
+        background: var(--primary-lighter);
+      }
+
+      .action-buttons .btn-accent {
+        background: var(--accent-gradient);
+        color: white;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .action-buttons .btn-accent:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .action-buttons .btn-danger {
+        background: white;
+        color: var(--error-color);
+        border: 1px solid var(--error-color);
+      }
+
+      .action-buttons .btn-danger:hover {
+        background: var(--error-light);
+      }
+
+      .action-buttons .btn-ai {
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        color: white;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .action-buttons .btn-ai::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          45deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%) rotate(45deg);
+        }
+        100% {
+          transform: translateX(100%) rotate(45deg);
+        }
+      }
+
+      .action-buttons .btn-ai:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+      }
+
+      /* 文件上传区域 */
+      .drop-area {
+        border: 2px dashed var(--primary-light);
+        border-radius: var(--radius-lg);
+        padding: 30px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--primary-lighter);
+      }
+
+      .drop-area:hover {
+        border-color: var(--primary-color);
+        background: white;
+      }
+
+      .drop-area-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+      }
+
+      .drop-area-text {
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 500;
+        margin: 0 0 8px 0;
+      }
+
+      .drop-area-hint {
+        color: var(--text-muted);
+        font-size: 12px;
+        margin: 0 0 8px 0;
+      }
+
+      .drop-area-warning {
+        color: var(--accent-color);
+        font-size: 11px;
+        margin: 8px 0 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      /* 解析结果区域 */
+      .parse-result {
+        margin-top: 16px;
+        padding: 16px;
+        background: var(--bg-light);
+        border-radius: var(--radius-md);
+        text-align: center;
+        color: var(--text-muted);
+      }
+
+      /* 通知样式 */
+      .notification {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: var(--radius-md);
+        color: white;
+        font-size: 14px;
+        z-index: 1000;
+        box-shadow: var(--shadow-lg);
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .notification.success {
+        background: var(--success-color);
+      }
+
+      .notification.error {
+        background: var(--error-color);
+      }
+
+      .notification.warning {
+        background: var(--warning-color);
+      }
+
+      .notification.info {
+        background: var(--primary-color);
+      }
+
+      /* 隐藏样式 */
+      .hidden {
+        display: none !important;
+      }
+
+      /* 设置页面特殊样式 */
+      .settings-section {
+        border-left: 3px solid var(--primary-color);
+      }
+
+      .settings-section.api-section {
+        border-left-color: var(--success-color);
+      }
+
+      .settings-hint {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 6px;
+      }
+
+      .settings-link {
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .settings-link:hover {
+        text-decoration: underline;
+      }
+
+      /* API 指南卡片 */
+      .api-guide {
+        margin-top: 16px;
+        padding: 14px;
+        background: var(--primary-lighter);
+        border: 1px solid var(--primary-light);
+        border-radius: var(--radius-md);
+      }
+
+      .api-guide-title {
+        font-size: 13px;
+        color: var(--primary-color);
+        font-weight: 600;
+        margin: 0 0 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .api-guide-list {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin: 0;
+        padding-left: 18px;
+        line-height: 2;
+      }
+
+      .api-guide-list a {
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .api-guide-list a:hover {
+        text-decoration: underline;
+      }
+
+      /* 使用说明卡片 */
+      .usage-guide {
+        margin-top: 24px;
+        padding: 20px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-lighter) 0%,
+          white 100%
+        );
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--primary-light);
+      }
+
+      .usage-guide h4 {
+        margin: 0 0 16px 0;
+        color: var(--primary-color);
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .usage-guide ul {
+        margin: 0;
+        padding-left: 0;
+        list-style: none;
+      }
+
+      .usage-guide li {
+        margin-bottom: 10px;
+        padding-left: 24px;
+        position: relative;
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .usage-guide li::before {
+        content: attr(data-step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 18px;
+        height: 18px;
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .usage-guide li:last-child {
+        margin-bottom: 0;
+      }
+
+      /* 测试连接按钮 */
+      .test-btn {
+        flex: 1;
+        padding: 10px 16px;
+        background: var(--success-color);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .test-btn:hover {
+        background: #45a049;
+        transform: translateY(-1px);
+      }
+
+      .test-result {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+      }
+
+      .test-result.success {
+        background: var(--success-light);
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+      }
+
+      .test-result.error {
+        background: var(--error-light);
+        color: var(--error-color);
+        border: 1px solid var(--error-color);
+      }
+
+      /* 保存设置按钮 */
+      .save-settings-btn {
+        margin-top: 20px;
+        padding: 12px 24px;
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        width: 100%;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .save-settings-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      /* 文件上传容器 */
+      .file-upload-container {
+        margin-top: 8px;
+      }
+
+      .file-upload-container input[type="file"] {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      /* 滚动条美化 */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: var(--bg-light);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--primary-light);
+        border-radius: 3px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-color);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 顶部标题栏 -->
+    <div class="header">
+      <img src="../../icons/icon_48x48.png" alt="Logo" class="header-logo" />
+      <div>
+        <h1 class="header-title">Offer 捞捞</h1>
+        <p class="header-subtitle">简历自动填写助手，让求职更轻松 ✨</p>
+      </div>
+    </div>
+
+    <!-- 模式切换选项卡 -->
+    <div class="mode-tabs">
+      <button id="mode-manual" class="active" data-mode="manual">
+        📝 简历填写
+      </button>
+      <button id="mode-settings" data-mode="settings">⚙️ 设置</button>
+    </div>
+
+    <!-- 手动填写内容 - 默认显示 -->
+    <div id="manual-content" class="content-panel">
+      <h3>填写您的简历</h3>
+
+      <!-- 简历上传功能 -->
+      <div class="section">
+        <h4 class="upload-title">智能上传简历</h4>
+        <div id="drop-area" class="drop-area">
+          <input
+            type="file"
+            id="file-input"
+            style="display: none"
+            accept=".pdf,.docx,.doc,.json,.txt"
+          />
+          <div class="drop-area-icon">📄</div>
+          <p class="drop-area-text">点击或拖拽文件到此处上传</p>
+          <p class="drop-area-hint">
+            支持 PDF、DOCX、JSON 格式，自动解析填充表单
+          </p>
+          <p class="drop-area-warning">⚠️ 请先在"设置"中配置简历解析 API</p>
+        </div>
+        <div id="parse-result" class="parse-result">
+          上传文件后将显示解析结果
+        </div>
+      </div>
+
+      <!-- 顶部操作按钮 -->
+      <div class="action-buttons">
+        <button id="fill-current-page" class="btn-primary">📋 预填</button>
+        <button id="optimize-resume" class="btn-ai">✨ AI优化</button>
+        <button id="save-resume" class="btn-secondary">💾 保存</button>
+        <button id="reset-resume" class="btn-danger">🗑️ 重置</button>
+        <button id="export-resume" class="btn-accent">📤 导出</button>
+      </div>
+
+      <!-- 基本信息 -->
+      <div class="section">
+        <h4 class="basic-title">基本信息</h4>
+        <div class="form-group">
+          <label for="name">姓名</label>
+          <input type="text" id="name" placeholder="请输入姓名" />
+        </div>
+        <div class="form-group">
+          <label for="gender">性别</label>
+          <select id="gender">
+            <option value="">请选择</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="birth-date">出生日期</label>
+          <input type="date" id="birth-date" />
+        </div>
+        <div class="form-group">
+          <label for="phone">手机号码</label>
+          <input type="tel" id="phone" placeholder="请输入手机号码" />
+        </div>
+        <div class="form-group">
+          <label for="email">电子邮箱</label>
+          <input type="email" id="email" placeholder="请输入电子邮箱" />
+        </div>
+        <div class="form-group">
+          <label for="id-card">身份证号</label>
+          <input type="text" id="id-card" placeholder="请输入身份证号" />
+        </div>
+        <div class="form-group">
+          <label for="location">所在地</label>
+          <input type="text" id="location" placeholder="请输入所在地" />
+        </div>
+        <div class="form-group">
+          <label for="political-status">政治面貌</label>
+          <select id="political-status">
+            <option value="">请选择</option>
+            <option value="群众">群众</option>
+            <option value="团员">团员</option>
+            <option value="党员">党员</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 求职期望 -->
+      <div class="section">
+        <h4 class="job-title">求职期望</h4>
+        <div class="form-group">
+          <label for="expected-position">期望职位</label>
+          <input
+            type="text"
+            id="expected-position"
+            placeholder="请输入期望职位"
+          />
+        </div>
+        <div class="form-group">
+          <label for="expected-industry">期望行业</label>
+          <input
+            type="text"
+            id="expected-industry"
+            placeholder="请输入期望行业"
+          />
+        </div>
+        <div class="form-group">
+          <label for="expected-salary">期望薪资</label>
+          <input
+            type="text"
+            id="expected-salary"
+            placeholder="请输入期望薪资"
+          />
+        </div>
+        <div class="form-group">
+          <label for="expected-location">期望地点</label>
+          <input
+            type="text"
+            id="expected-location"
+            placeholder="请输入期望地点"
+          />
+        </div>
+        <div id="internship-specific" class="form-group hidden">
+          <label for="internship-duration">实习时长</label>
+          <input
+            type="text"
+            id="internship-duration"
+            placeholder="请输入实习时长"
+          />
+        </div>
+        <div id="part-time-specific" class="form-group hidden">
+          <label for="available-time">可工作时间</label>
+          <input
+            type="text"
+            id="available-time"
+            placeholder="请输入可工作时间"
+          />
+        </div>
+      </div>
+
+      <!-- 教育经历 -->
+      <div class="section">
+        <h4 class="edu-title">教育经历</h4>
+        <div id="education-list" class="dynamic-list">
+          <div class="dynamic-item">
+            <button class="remove-btn">删除</button>
+            <div class="form-group">
+              <label>学校名称</label>
+              <input
+                type="text"
+                name="education[0][school]"
+                placeholder="请输入学校名称"
+              />
+            </div>
+            <div class="form-group">
+              <label>专业</label>
+              <input
+                type="text"
+                name="education[0][major]"
+                placeholder="请输入专业"
+              />
+            </div>
+            <div class="form-group">
+              <label>学历</label>
+              <select name="education[0][degree]">
+                <option value="">请选择</option>
+                <option value="专科">专科</option>
+                <option value="本科">本科</option>
+                <option value="硕士">硕士</option>
+                <option value="博士">博士</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>排名</label>
+              <input
+                type="text"
+                name="education[0][rank]"
+                placeholder="请输入排名（如：前5%）"
+              />
+            </div>
+            <div class="form-group-inline">
+              <div class="form-group">
+                <label>入学时间</label>
+                <input type="date" name="education[0][start-date]" />
+              </div>
+              <div class="form-group">
+                <label>毕业时间</label>
+                <input type="date" name="education[0][end-date]" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <button id="add-education" class="add-btn">+ 添加教育经历</button>
+      </div>
+
+      <!-- 实习/工作经历 -->
+      <div class="section">
+        <h4 class="work-title">实习/工作经历</h4>
+        <div id="internship-list" class="dynamic-list">
+          <div class="dynamic-item">
+            <button class="remove-btn">删除</button>
+            <div class="form-group">
+              <label>公司名称</label>
+              <input
+                type="text"
+                name="internship[0][company]"
+                placeholder="请输入公司名称"
+              />
+            </div>
+            <div class="form-group">
+              <label>职位</label>
+              <input
+                type="text"
+                name="internship[0][position]"
+                placeholder="请输入职位"
+              />
+            </div>
+            <div class="form-group-inline">
+              <div class="form-group">
+                <label>开始时间</label>
+                <input type="date" name="internship[0][start-date]" />
+              </div>
+              <div class="form-group">
+                <label>结束时间</label>
+                <input type="date" name="internship[0][end-date]" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>工作描述</label>
+              <textarea
+                name="internship[0][description]"
+                placeholder="请输入工作描述"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <button id="add-internship" class="add-btn">+ 添加工作经历</button>
+      </div>
+
+      <!-- 项目经历 -->
+      <div class="section">
+        <h4 class="project-title">项目经历</h4>
+        <div id="project-list" class="dynamic-list">
+          <div class="dynamic-item">
+            <button class="remove-btn">删除</button>
+            <div class="form-group">
+              <label>项目名称</label>
+              <input
+                type="text"
+                name="project[0][project-name]"
+                placeholder="请输入项目名称"
+              />
+            </div>
+            <div class="form-group">
+              <label>担任角色</label>
+              <input
+                type="text"
+                name="project[0][role]"
+                placeholder="请输入担任角色"
+              />
+            </div>
+            <div class="form-group">
+              <label>项目时间</label>
+              <input
+                type="text"
+                name="project[0][project-time]"
+                placeholder="请输入项目时间"
+              />
+            </div>
+            <div class="form-group">
+              <label>项目描述</label>
+              <textarea
+                name="project[0][project-desc]"
+                placeholder="请输入项目描述"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label>职责描述</label>
+              <textarea
+                name="project[0][responsibilities]"
+                placeholder="请输入职责描述"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <button id="add-project" class="add-btn">+ 添加项目经历</button>
+      </div>
+
+      <!-- 技能信息 -->
+      <div class="section">
+        <h4 class="skill-title">技能信息</h4>
+        <div id="skills-list" class="dynamic-list">
+          <div class="dynamic-item">
+            <button class="remove-btn">删除</button>
+            <div class="form-group">
+              <label>技能名称</label>
+              <input
+                type="text"
+                name="skills[0][name]"
+                placeholder="请输入技能名称"
+              />
+            </div>
+            <div class="form-group">
+              <label>技能水平</label>
+              <select name="skills[0][level]">
+                <option value="">请选择</option>
+                <option value="初级">初级</option>
+                <option value="中级">中级</option>
+                <option value="高级">高级</option>
+                <option value="专家">专家</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button id="add-skill" class="add-btn">+ 添加技能</button>
+      </div>
+
+      <!-- 语言能力 -->
+      <div class="section">
+        <h4 class="lang-title">语言能力</h4>
+        <div id="language-list" class="dynamic-list">
+          <div class="dynamic-item">
+            <button class="remove-btn">删除</button>
+            <div class="form-group">
+              <label>语言名称</label>
+              <input
+                type="text"
+                name="language[0][name]"
+                placeholder="请输入语言名称（如：英语、日语）"
+              />
+            </div>
+            <div class="form-group">
+              <label>掌握程度</label>
+              <select name="language[0][proficiency]">
+                <option value="">请选择</option>
+                <option value="入门">入门</option>
+                <option value="基础">基础</option>
+                <option value="熟练">熟练</option>
+                <option value="精通">精通</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>证书</label>
+              <input
+                type="text"
+                name="language[0][certificate]"
+                placeholder="请输入证书名称（如：大学英语六级）"
+              />
+              <input
+                type="file"
+                name="language[0][certificate-file]"
+                accept=".pdf,.jpg,.png"
+                style="margin-top: 8px"
+              />
+            </div>
+          </div>
+        </div>
+        <button id="add-language" class="add-btn">+ 添加语言能力</button>
+      </div>
+
+      <!-- 自定义字段 -->
+      <div class="section">
+        <h4 class="custom-title">自定义字段</h4>
+        <div id="custom-field-list" class="dynamic-list">
+          <div class="dynamic-item">
+            <button class="remove-btn">删除</button>
+            <div class="form-group">
+              <label>字段名称</label>
+              <input
+                type="text"
+                name="custom[0][name]"
+                placeholder="请输入字段名称"
+              />
+            </div>
+            <div class="form-group">
+              <label>字段内容</label>
+              <textarea
+                name="custom[0][content]"
+                placeholder="请输入字段内容"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <button id="add-custom-field" class="add-btn">+ 添加自定义字段</button>
+      </div>
+
+      <!-- 自我描述 -->
+      <div class="section">
+        <h4 class="intro-title">自我描述</h4>
+        <div class="form-group">
+          <textarea
+            id="self-intro"
+            placeholder="请输入自我描述，展示您的优势和特点"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设置内容 -->
+    <div id="settings-content" class="content-panel hidden">
+      <h3>设置</h3>
+
+      <!-- AI 模型配置 -->
+      <div class="section settings-section">
+        <h4 class="ai-title">AI 模型配置</h4>
+        <p class="settings-hint" style="margin-top: -8px; margin-bottom: 16px">
+          用于简历内容智能优化
+        </p>
+
+        <div class="form-group">
+          <label for="model-provider">模型提供商</label>
+          <select id="model-provider">
+            <option value="deepseek">DeepSeek</option>
+            <option value="kimi">Kimi (月之暗面)</option>
+            <option value="qwen">通义千问 (阿里云)</option>
+            <option value="volcengine">火山引擎 (豆包)</option>
+            <option value="zhipu">智谱 AI (GLM)</option>
+            <option value="baichuan">百川智能</option>
+            <option value="custom">自定义 (OpenAI 兼容)</option>
+          </select>
+          <p class="settings-hint">选择您要使用的 AI 模型服务商</p>
+        </div>
+
+        <div class="form-group">
+          <label for="model-select">选择模型</label>
+          <select id="model-select">
+            <option value="">请先选择模型提供商</option>
+          </select>
+          <p class="settings-hint">不同模型有不同的能力和价格</p>
+        </div>
+
+        <div class="form-group">
+          <label for="model-api-key">API Key</label>
+          <input
+            type="password"
+            id="model-api-key"
+            placeholder="请输入模型 API 密钥"
+          />
+          <p class="settings-hint">在对应平台的控制台获取 API Key</p>
+        </div>
+
+        <div id="custom-url-group" class="form-group hidden">
+          <label for="model-custom-url">自定义 API URL</label>
+          <input
+            type="text"
+            id="model-custom-url"
+            placeholder="请输入自定义 API 地址（OpenAI 兼容格式）"
+          />
+          <p class="settings-hint">例如：https://your-api.com/v1</p>
+        </div>
+
+        <div style="margin-top: 16px">
+          <button id="test-model-connection" class="test-btn">
+            🔗 测试连接
+          </button>
+        </div>
+
+        <div
+          id="model-test-result"
+          class="test-result"
+          style="display: none"
+        ></div>
+
+        <!-- API 获取指南 -->
+        <div class="api-guide">
+          <p class="api-guide-title">📚 API Key 获取指南</p>
+          <ul class="api-guide-list">
+            <li>
+              <a href="https://platform.deepseek.com/" target="_blank"
+                >DeepSeek 开放平台</a
+              >
+            </li>
+            <li>
+              <a href="https://platform.moonshot.cn/" target="_blank"
+                >Kimi 开放平台</a
+              >
+            </li>
+            <li>
+              <a href="https://dashscope.console.aliyun.com/" target="_blank"
+                >阿里云百炼 (通义千问)</a
+              >
+            </li>
+            <li>
+              <a href="https://console.volcengine.com/ark" target="_blank"
+                >火山引擎方舟平台</a
+              >
+            </li>
+            <li>
+              <a href="https://open.bigmodel.cn/" target="_blank"
+                >智谱 AI 开放平台</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 简历解析 API 配置 -->
+      <div class="section settings-section api-section">
+        <h4 class="api-title">简历解析 API 配置</h4>
+        <p class="settings-hint" style="margin-top: -8px; margin-bottom: 16px">
+          用于解析 PDF/DOCX 格式的简历文件
+        </p>
+
+        <div class="form-group">
+          <label for="parse-api-url">API URL</label>
+          <input
+            type="text"
+            id="parse-api-url"
+            placeholder="请输入简历解析 API 的 URL 地址"
+          />
+          <p class="settings-hint">
+            示例：https://xxx.cn-hangzhou.aliyuncs.com/resume/parse
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label for="parse-app-code">APP Code</label>
+          <input
+            type="password"
+            id="parse-app-code"
+            placeholder="请输入 APP Code"
+          />
+          <p class="settings-hint">购买 API 服务后获取的 APP Code</p>
+          <p class="settings-hint">
+            参考：<a
+              href="https://market.aliyun.com/detail/cmapi034316"
+              target="_blank"
+              class="settings-link"
+              >简历解析 API</a
+            >
+          </p>
+        </div>
+      </div>
+
+      <button id="save-settings" class="save-settings-btn">💾 保存设置</button>
+
+      <!-- 使用说明 -->
+      <div class="usage-guide">
+        <h4>📖 使用说明</h4>
+        <ul>
+          <li data-step="1">
+            填写简历信息，系统会<strong>自动保存</strong>您的输入
+          </li>
+          <li data-step="2">
+            或点击"保存"按钮<strong>手动保存</strong>您的信息
+          </li>
+          <li data-step="3">切换到目标网站页面，点击"预填"快速填充表单</li>
+          <li data-step="4">
+            可通过"导出"功能备份简历数据（支持 JSON/LaTeX/提示词）
+          </li>
+          <li data-step="5">配置"简历解析 API"以启用智能简历解析功能</li>
+          <li data-step="6">配置"AI 模型"以启用简历内容优化功能（可选）</li>
+          <li data-step="7">设置会自动保存，无需手动点击保存按钮</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 引入JavaScript文件 - 按模块顺序加载 -->
+    <!-- 工具模块 -->
+    <script src="utils/helpers.js"></script>
+    <script src="utils/notification.js"></script>
+    <script src="utils/storage.js"></script>
+    <script src="utils/form.js"></script>
+    <script src="utils/api.js"></script>
+    <script src="utils/model-api.js"></script>
+    <script src="utils/latex-export.js"></script>
+    <script src="utils/prompt-export.js"></script>
+
+    <!-- 组件模块 -->
+    <script src="components/mode-tabs.js"></script>
+    <script src="components/dynamic-items.js"></script>
+    <script src="components/resume-upload.js"></script>
+
+    <!-- 处理器模块 -->
+    <script src="handlers/auto-save.js"></script>
+    <script src="handlers/action-buttons.js"></script>
+    <script src="handlers/field-fill-buttons.js"></script>
+    <script src="handlers/add-buttons.js"></script>
+
+    <!-- 数据加载器 -->
+    <script src="data-loader.js"></script>
+
+    <!-- 主入口文件 -->
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,154 @@
+// 添加按钮处理器模块
+// 处理各种动态项的添加按钮
+
+/**
+ * 初始化添加按钮功能
+ */
+function initAddButtons() {
+    safeExecute(function() {
+        console.log('Initializing add buttons functionality');
+        
+        // 添加技能按钮
+        var addSkillBtn = document.getElementById('add-skill');
+        if (addSkillBtn) {
+            addSkillBtn.addEventListener('click', function() {
+                var skillsList = document.getElementById('skills-list');
+                if (skillsList) {
+                    var newIndex = skillsList.querySelectorAll('.dynamic-item').length;
+                    var newSkillItem = createSkillItem(newIndex);
+                    skillsList.appendChild(newSkillItem);
+                    if (typeof addAutoSaveListenersToSkillItem === 'function') {
+                        addAutoSaveListenersToSkillItem(newSkillItem);
+                    }
+                    showNotification('已添加新技能项', 'success');
+                    autoSaveFormData();
+                }
+            });
+        }
+        
+        // 添加教育经历按钮
+        const addEducationBtn = document.getElementById('add-education');
+        if (addEducationBtn) {
+            addEducationBtn.addEventListener('click', function() {
+                const educationList = document.getElementById('education-list');
+                if (educationList) {
+                    const currentItems = educationList.querySelectorAll('.dynamic-item');
+                    const newIndex = currentItems.length;
+                    const newEducationItem = createEducationItem(newIndex);
+                    educationList.appendChild(newEducationItem);
+                    
+                    const inputs = newEducationItem.querySelectorAll('input, textarea, select');
+                    if (typeof debouncedAutoSave === 'function') {
+                        inputs.forEach(input => {
+                            input.addEventListener('input', debouncedAutoSave);
+                        });
+                    }
+                    
+                    showNotification('已添加新的教育经历', 'success');
+                    autoSaveFormData();
+                }
+            });
+        }
+        
+        // 添加实习/工作经历按钮
+        const addWorkExperienceBtn = document.getElementById('add-internship');
+        if (addWorkExperienceBtn) {
+            addWorkExperienceBtn.addEventListener('click', function() {
+                const workExperienceList = document.getElementById('internship-list');
+                if (workExperienceList) {
+                    const currentItems = workExperienceList.querySelectorAll('.dynamic-item');
+                    const newIndex = currentItems.length;
+                    const newWorkExperienceItem = createWorkExperienceItem(newIndex);
+                    workExperienceList.appendChild(newWorkExperienceItem);
+                    
+                    const inputs = newWorkExperienceItem.querySelectorAll('input, textarea, select');
+                    if (typeof debouncedAutoSave === 'function') {
+                        inputs.forEach(input => {
+                            input.addEventListener('input', debouncedAutoSave);
+                        });
+                    }
+                    
+                    showNotification('已添加新的实习/工作经历', 'success');
+                    autoSaveFormData();
+                }
+            });
+        }
+        
+        // 添加项目经历按钮
+        const addProjectBtn = document.getElementById('add-project');
+        if (addProjectBtn) {
+            addProjectBtn.addEventListener('click', function() {
+                const projectsList = document.getElementById('project-list');
+                if (projectsList) {
+                    const currentItems = projectsList.querySelectorAll('.dynamic-item');
+                    const newIndex = currentItems.length;
+                    const newProjectItem = createProjectItem(newIndex);
+                    projectsList.appendChild(newProjectItem);
+                    
+                    const inputs = newProjectItem.querySelectorAll('input, textarea, select');
+                    if (typeof debouncedAutoSave === 'function') {
+                        inputs.forEach(input => {
+                            input.addEventListener('input', debouncedAutoSave);
+                        });
+                    }
+                    
+                    showNotification('已添加新项目经历', 'success');
+                    autoSaveFormData();
+                }
+            });
+        }
+        
+        // 添加语言能力按钮
+        const addLanguageBtn = document.getElementById('add-language');
+        if (addLanguageBtn) {
+            addLanguageBtn.addEventListener('click', function() {
+                const languagesList = document.getElementById('language-list');
+                if (languagesList) {
+                    const currentItems = languagesList.querySelectorAll('.dynamic-item');
+                    const newIndex = currentItems.length;
+                    const newLanguageItem = createLanguageItem(newIndex);
+                    languagesList.appendChild(newLanguageItem);
+                    
+                    const inputs = newLanguageItem.querySelectorAll('input, select');
+                    if (typeof debouncedAutoSave === 'function') {
+                        inputs.forEach(input => {
+                            input.addEventListener('input', debouncedAutoSave);
+                            input.addEventListener('change', debouncedAutoSave);
+                        });
+                    }
+                    
+                    showNotification('已添加新的语言能力', 'success');
+                    autoSaveFormData();
+                }
+            });
+        }
+        
+        // 添加自定义字段按钮
+        const addCustomFieldBtn = document.getElementById('add-custom-field');
+        if (addCustomFieldBtn) {
+            addCustomFieldBtn.addEventListener('click', function() {
+                const customFieldList = document.getElementById('custom-field-list');
+                if (customFieldList) {
+                    const currentItems = customFieldList.querySelectorAll('.dynamic-item');
+                    const newIndex = currentItems.length;
+                    const newFieldDiv = createCustomFieldItem(newIndex);
+                    customFieldList.appendChild(newFieldDiv);
+                    
+                    const inputs = newFieldDiv.querySelectorAll('input, textarea');
+                    if (typeof debouncedAutoSave === 'function') {
+                        inputs.forEach(input => {
+                            input.addEventListener('input', debouncedAutoSave);
+                            input.addEventListener('change', debouncedAutoSave);
+                        });
+                    }
+                    
+                    showNotification('已添加新的自定义字段', 'success');
+                    autoSaveFormData();
+                }
+            });
+        }
+        
+        console.log('Add buttons initialization completed');
+    }, this);
+}
+
