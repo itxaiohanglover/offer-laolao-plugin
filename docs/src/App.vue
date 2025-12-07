@@ -91,7 +91,15 @@ const addRippleEffect = (e) => {
 const handleNavClick = (targetSelector) => {
   const target = document.querySelector(targetSelector)
   if (target) {
-    target.scrollIntoView({ behavior: 'smooth' })
+    // 计算导航栏高度：top(24px) + min-height(56px) + padding(上下各12px) + 额外间距(20px) ≈ 120px
+    const navHeight = 120
+    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset
+    const offsetPosition = targetPosition - navHeight
+    
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    })
   }
 }
 
@@ -806,7 +814,7 @@ const versions = [
 .header-section {
   position: relative;
   z-index: 1;
-  padding-top: 180px;
+  padding-top: 125px;
   padding-bottom: 80px;
   text-align: center;
   display: flex;
@@ -870,6 +878,7 @@ const versions = [
 .highlight-text {
   background: linear-gradient(135deg, #1890ff 0%, #36cfc9 50%, #722ed1 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   background-size: 200% 200%;
   animation: gradientShift 4s ease infinite;
@@ -989,6 +998,7 @@ const versions = [
   flex-direction: column;
   align-items: center;
   margin-bottom: 48px;
+  scroll-margin-top: 120px; /* 为固定导航栏预留空间，避免遮挡内容 */
 }
 
 /* 节点图标 */
