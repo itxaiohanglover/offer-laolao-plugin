@@ -10,7 +10,7 @@
 ![Chrome](https://img.shields.io/badge/Chrome-Extension-green)
 ![Manifest](https://img.shields.io/badge/Manifest-V3-orange)
 
-🌐 **在线访问**：[https://resume-extension-website.vercel.app/](https://resume-extension-website.vercel.app/)
+🌐 **在线访问**：[https://offer-laolao-plugin.vercel.app](https://offer-laolao-plugin.vercel.app)
 
 ## ✨ 核心功能特性
 
