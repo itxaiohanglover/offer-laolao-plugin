@@ -2,6 +2,19 @@
   <img src="./assets/laolao.gif" alt="Offer 捞捞 Logo" width="200">
 </p>
 
+<p align="center">
+  <a href="./README.md"><img src="https://img.shields.io/badge/English-blue" alt="English"></a>
+  <a href="./README.zh-CN.md"><img src="https://img.shields.io/badge/中文-red" alt="中文"></a>
+  <a href="./README.zh-TW.md"><img src="https://img.shields.io/badge/中文繁体-orange" alt="中文繁体"></a>
+  <a href="./README.fr.md"><img src="https://img.shields.io/badge/Français-green" alt="Français"></a>
+  <a href="./README.ja.md"><img src="https://img.shields.io/badge/日本語-purple" alt="日本語"></a>
+  <a href="./README.ko.md"><img src="https://img.shields.io/badge/한국어-pink" alt="한국어"></a>
+  <a href="./README.ru.md"><img src="https://img.shields.io/badge/Русский-teal" alt="Русский"></a>
+  <a href="./README.es.md"><img src="https://img.shields.io/badge/Español-yellow" alt="Español"></a>
+  <a href="./README.ar.md"><img src="https://img.shields.io/badge/العربية-yellow" alt="العربية"></a>
+  <a href="./README.id.md"><img src="https://img.shields.io/badge/Bahasa_Indonesia-yellow" alt="Bahasa Indonesia"></a>
+</p>
+
 # 🚀 Offer 捞捞 - 简历自动填写助手智能浏览器插件
 
 > 一款功能强大的 Chrome 浏览器扩展，支持智能解析简历、手动填写双模式，并提供 **AI 智能字段匹配** 和 **字段级精准填充** 功能，帮助求职者在各大招聘网站上快速、准确地完成简历填写。
