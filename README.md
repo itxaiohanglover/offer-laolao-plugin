@@ -1,291 +1,304 @@
 <p align="center">
-  <img src="./assets/laolao.gif" alt="Offer 捞捞 Logo" width="200">
+  <img src="./assets/laolao.gif" alt="Offer Laolao Logo" width="200">
 </p>
 
-# 🚀 Offer 捞捞 - 简历自动填写助手智能浏览器插件
+<p align="center">
+  <a href="./README.md"><img src="https://img.shields.io/badge/English-blue" alt="English"></a>
+  <a href="./README.zh-CN.md"><img src="https://img.shields.io/badge/中文-red" alt="中文"></a>
+  <a href="./README.zh-TW.md"><img src="https://img.shields.io/badge/中文繁体-orange" alt="中文繁体"></a>
+  <a href="./README.fr.md"><img src="https://img.shields.io/badge/Français-green" alt="Français"></a>
+  <a href="./README.ja.md"><img src="https://img.shields.io/badge/日本語-purple" alt="日本語"></a>
+  <a href="./README.ko.md"><img src="https://img.shields.io/badge/한국어-pink" alt="한국어"></a>
+  <a href="./README.ru.md"><img src="https://img.shields.io/badge/Русский-teal" alt="Русский"></a>
+  <a href="./README.es.md"><img src="https://img.shields.io/badge/Español-yellow" alt="Español"></a>
+  <a href="./README.ar.md"><img src="https://img.shields.io/badge/العربية-yellow" alt="العربية"></a>
+  <a href="./README.id.md"><img src="https://img.shields.io/badge/Bahasa_Indonesia-yellow" alt="Bahasa Indonesia"></a>
+</p>
 
-> 一款功能强大的 Chrome 浏览器扩展，支持智能解析简历、手动填写双模式，并提供 **AI 智能字段匹配** 和 **字段级精准填充** 功能，帮助求职者在各大招聘网站上快速、准确地完成简历填写。
+# 🚀 Offer Laolao - Resume Auto-Fill Assistant Smart Browser Extension
 
-![版本](https://img.shields.io/badge/版本-1.0-blue)
+> A powerful Chrome browser extension that supports both intelligent resume parsing and manual filling modes, with **AI intelligent field matching** and **field-level precise filling** capabilities, helping job seekers quickly and accurately complete resume filling on major recruitment websites.
+
+![Version](https://img.shields.io/badge/Version-1.0-blue)
 ![Chrome](https://img.shields.io/badge/Chrome-Extension-green)
 ![Manifest](https://img.shields.io/badge/Manifest-V3-orange)
 
-🌐 **在线访问**：[https://offer-laolao-plugin.vercel.app](https://offer-laolao-plugin.vercel.app)
+🌐 **Online Access**: [https://offer-laolao-plugin.vercel.app](https://offer-laolao-plugin.vercel.app)
 
-## ✨ 核心功能特性
+## ✨ Core Features
 
-### 📄 智能简历解析
+### 📄 Intelligent Resume Parsing
 
-- **多格式支持**：支持 PDF、DOCX、DOC、TXT、JSON 等主流简历格式
-- **云端 API 解析**：集成阿里云市场简历解析 API，精准提取简历信息
-- **JSON 直接导入**：支持直接导入 JSON 格式的简历数据，实现数据备份与恢复
-- **拖拽上传**：支持文件拖放上传，操作便捷
-- **智能字段映射**：自动将解析结果映射到对应表单字段
+- **Multi-format support**: Supports mainstream resume formats including PDF, DOCX, DOC, TXT, JSON
+- **Cloud API parsing**: Integrates with Alibaba Cloud resume parsing API for accurate resume information extraction
+- **JSON direct import**: Supports direct import of JSON format resume data for data backup and restoration
+- **Drag-and-drop upload**: Supports file drag-and-drop upload for convenient operation
+- **Intelligent field mapping**: Automatically maps parsing results to corresponding form fields
 
-### 📝 完整的简历信息管理
+### 📝 Complete Resume Information Management
 
-支持填写和管理以下简历模块：
+Supports filling and managing the following resume modules:
 
-| 模块              | 包含字段                                                                     |
-| ----------------- | ---------------------------------------------------------------------------- |
-| **基本信息**      | 姓名、性别、出生日期、手机号码、电子邮箱、身份证号、所在地、政治面貌         |
-| **求职期望**      | 期望职位、期望行业、期望薪资、期望地点、实习时长、可工作时间                 |
-| **教育经历**      | 学校名称、专业、学历（专科/本科/硕士/博士）、排名、入学/毕业时间（支持多条） |
-| **工作/实习经历** | 公司名称、职位、开始/结束时间、工作描述（支持多条）                          |
-| **项目经历**      | 项目名称、担任角色、项目时间、项目描述、职责描述（支持多条）                 |
-| **技能信息**      | 技能名称、技能水平（初级/中级/高级/专家）（支持多条）                        |
-| **语言能力**      | 语言名称、掌握程度（入门/基础/熟练/精通）、语言证书（支持多条）              |
-| **自定义字段**    | 自定义字段名称和内容（支持多条）                                             |
-| **自我描述**      | 个人优势和特点展示                                                           |
+| Module              | Included Fields                                                                 |
+| ------------------- | -------------------------------------------------------------------------------- |
+| **Basic Information**      | Name, Gender, Date of Birth, Phone Number, Email, ID Number, Location, Political Status         |
+| **Job Expectations**      | Desired Position, Desired Industry, Desired Salary, Desired Location, Internship Duration, Available Working Hours                 |
+| **Education Experience**      | School Name, Major, Degree (Junior College/Bachelor/Master/PhD), Ranking, Enrollment/Graduation Date (supports multiple entries) |
+| **Work/Internship Experience** | Company Name, Position, Start/End Date, Job Description (supports multiple entries)                          |
+| **Project Experience**      | Project Name, Role, Project Duration, Project Description, Responsibility Description (supports multiple entries)                 |
+| **Skills**      | Skill Name, Skill Level (Beginner/Intermediate/Advanced/Expert) (supports multiple entries)                        |
+| **Language Proficiency**      | Language Name, Proficiency Level (Beginner/Basic/Proficient/Expert), Language Certificates (supports multiple entries)              |
+| **Custom Fields**    | Custom field names and content (supports multiple entries)                                             |
+| **Self-description**      | Personal strengths and characteristics                                                           |
 
-### 🎯 智能表单填充
+### 🎯 Intelligent Form Filling
 
-#### 一键预填功能
+#### One-click Pre-fill Function
 
-- 点击「📋 预填」按钮，自动将简历数据填充到当前招聘网站的表单中
-- 智能识别表单字段，自动匹配对应的简历信息
-- 支持 input、textarea、select、contenteditable 等多种表单元素
-- 自动触发表单事件（input、change、blur），确保网站验证通过
-- 填充完成后提供视觉反馈，高亮显示已填充字段
+- Click the "📋 Pre-fill" button to automatically fill resume data into the current recruitment website form
+- Intelligently identifies form fields and automatically matches corresponding resume information
+- Supports multiple form elements including input, textarea, select, contenteditable
+- Automatically triggers form events (input, change, blur) to ensure website validation passes
+- Provides visual feedback after filling, highlighting filled fields
 
-#### 字段级精准填充（↗ 指向填充）
+#### Field-level Precise Filling (↗ Point-and-Fill)
 
-- 每个字段旁都有「↗」按钮，支持**单字段精准填充**
-- 点击按钮后进入「指向填充模式」：
-  - 页面顶部会显示操作提示
-  - 鼠标悬停在可填充元素上时会高亮显示（蓝色边框）
-  - 点击目标输入框即可将该字段值填入
-  - 按 `Esc` 键可取消操作
-- 支持填充到：input、textarea、select、contenteditable 元素
-- 自动触发表单事件（input、change、blur），确保网站验证通过
-- 填充成功后自动关闭弹窗，方便连续操作
+- Each field has a "↗" button for **single-field precise filling**
+- Click the button to enter "Point-and-Fill Mode":
+  - Operation tips will be displayed at the top of the page
+  - Elements that can be filled will be highlighted with a blue border when hovering the mouse
+  - Click the target input box to fill the field value
+  - Press `Esc` to cancel the operation
+- Supports filling into: input, textarea, select, contenteditable elements
+- Automatically triggers form events (input, change, blur) to ensure website validation passes
+- Automatically closes the popup after successful filling for convenient continuous operation
 
-### 🤖 AI 大模型集成
+### 🤖 AI Large Model Integration
 
-支持多家国产大模型服务商，用于简历内容智能优化和字段匹配：
+Supports multiple domestic large model service providers for intelligent resume content optimization and field matching:
 
-| 服务商                | 支持模型                                               |
+| Service Provider                | Supported Models                                               |
 | --------------------- | ------------------------------------------------------ |
-| **DeepSeek**          | DeepSeek Chat、DeepSeek Coder                          |
-| **Kimi (月之暗面)**   | Moonshot 8K/32K/128K                                   |
-| **通义千问 (阿里云)** | Qwen Turbo/Plus/Max/Max 长文本                         |
-| **火山引擎 (豆包)**   | 豆包 Seed 1.6、豆包 Seed 1.6 Lite、豆包 Seed 1.6 Flash |
-| **智谱 AI**           | GLM-4、GLM-4 Flash、GLM-3 Turbo                        |
-| **百川智能**          | 百川 2 Turbo、百川 2 Turbo 192K                        |
-| **自定义**            | 支持任意 OpenAI 兼容格式的 API                         |
+| **DeepSeek**          | DeepSeek Chat, DeepSeek Coder                          |
+| **Kimi (Moonshot)**   | Moonshot 8K/32K/128K                                   |
+| **Tongyi Qianwen (Alibaba Cloud)** | Qwen Turbo/Plus/Max/Max Long Text                         |
+| **Volcano Engine (Doubao)**   | Doubao Seed 1.6, Doubao Seed 1.6 Lite, Doubao Seed 1.6 Flash |
+| **Zhipu AI**           | GLM-4, GLM-4 Flash, GLM-3 Turbo                        |
+| **Baichuan Intelligence**          | Baichuan 2 Turbo, Baichuan 2 Turbo 192K                        |
+| **Custom**            | Supports any OpenAI-compatible API                         |
 
-**AI 功能特性**：
+**AI Function Features**:
 
-- 一键测试 API 连接
-- **✨ AI 一键优化简历**：智能优化自我介绍、工作描述、项目描述等内容
-- **🤖 AI 生成简历介绍**：基于简历数据智能生成专业的自我介绍（200-300 字）
-  - 支持复制到剪贴板、填入自我描述字段、下载为 TXT 文件
-- 使用 STAR 法则优化工作和项目描述
-- 自动添加量化数据和成果描述
+- One-click API connection testing
+- **✨ AI One-click Resume Optimization**: Intelligently optimizes self-introductions, job descriptions, project descriptions, etc.
+- **🤖 AI-generated Resume Introduction**: Intelligently generates professional self-introductions (200-300 words) based on resume data
+  - Supports copying to clipboard, filling into self-description field, downloading as TXT file
+- Optimizes work and project descriptions using the STAR method
+- Automatically adds quantitative data and achievement descriptions
 
-### 📤 多格式导出
+### 📤 Multi-format Export
 
-- **JSON 导出**：导出完整简历数据，可用于备份和跨设备同步
-- **LaTeX 导出**：生成专业的 LaTeX 简历模板
-  - 可直接在 [Overleaf](https://www.overleaf.com/) 上编译
-  - 支持中文（使用 ctex 宏包）
-  - 专业排版，适合学术和技术岗位求职
-  - 包含完整的样式定义和注释
-- **🤖 AI 生成简历介绍**：调用 AI 模型智能生成专业自我介绍
-  - 基于简历中的教育背景、工作经历、项目经历、技能特长生成
-  - 支持复制到剪贴板
-  - 支持一键填入自我描述字段
-  - 支持下载为 `.txt` 文件
-- **简历介绍提示词导出**：导出结构化提示词模板，支持 `.md`/`.txt`
-  - 包含个人基本信息提示
-  - 工作经历提问模板
-  - 项目经验询问框架
-  - 技能评估引导词
+- **JSON Export**: Export complete resume data for backup and cross-device synchronization
+- **LaTeX Export**: Generate professional LaTeX resume templates
+  - Can be directly compiled on [Overleaf](https://www.overleaf.com/)
+  - Supports Chinese (using ctex package)
+  - Professional typesetting, suitable for academic and technical job applications
+  - Includes complete style definitions and comments
+- **🤖 AI-generated Resume Introduction**: Call AI models to intelligently generate professional self-introductions
+  - Generated based on educational background, work experience, project experience, and skills in the resume
+  - Supports copying to clipboard
+  - Supports one-click filling into self-description field
+  - Supports downloading as `.txt` file
+- **Resume Introduction Prompt Export**: Export structured prompt templates, supporting `.md`/`.txt`
+  - Includes personal basic information prompts
+  - Work experience question templates
+  - Project experience inquiry framework
+  - Skill assessment guidance words
 
-### 💾 数据持久化
+### 💾 Data Persistence
 
-- **Chrome Storage API**：使用浏览器原生存储，数据安全可靠
-- **实时自动保存**：表单内容变化时自动保存，防止数据丢失
-- **手动保存**：支持手动点击保存按钮确认保存
-- **数据重置**：一键清空所有简历数据，重新开始
-- **设置自动保存**：设置页面的配置会自动保存
+- **Chrome Storage API**: Uses browser-native storage for secure and reliable data
+- **Real-time automatic saving**: Automatically saves when form content changes to prevent data loss
+- **Manual saving**: Supports manual click of save button to confirm saving
+- **Data reset**: One-click clearing of all resume data to start fresh
+- **Automatic setting saving**: Settings page configurations are automatically saved
 
-## 🏗️ 项目架构
+## 🏗️ Project Architecture
 
 ```
 super_resume/
-├── docs                       # 介绍页
-├── manifest.json              # Chrome 扩展配置文件 (Manifest V3)
-├── icons/                     # 扩展图标
+├── docs                       # Introduction pages
+├── manifest.json              # Chrome extension configuration file (Manifest V3)
+├── icons/                     # Extension icons
 ├── src/
-│   ├── background/            # 后台服务脚本
-│   ├── content/               # 内容脚本（注入到网页）
-│   └── popup/                 # 弹出页面
+│   ├── background/            # Background service scripts
+│   ├── content/               # Content scripts (injected into webpages)
+│   └── popup/                 # Popup pages
 └── README.md
 ```
 
-## 📦 安装指南
+## 📦 Installation Guide
 
-### 方式一：开发者模式安装
+### Method 1: Install in Developer Mode
 
-1. **下载项目**
+1. **Download the project**
 
    ```bash
    git clone https://github.com/itxaiohanglover/offer-laolao-plugin.git
    ```
 
-   或直接下载 ZIP 并解压
+   Or directly download the ZIP and extract it
 
-2. **打开 Chrome 扩展管理页面**
+2. **Open Chrome extension management page**
 
-   - 在地址栏输入：`chrome://extensions/`
-   - 或通过菜单：更多工具 → 扩展程序
+   - Enter in address bar: `chrome://extensions/`
+   - Or through menu: More Tools → Extensions
 
-3. **开启开发者模式**
+3. **Enable Developer Mode**
 
-   - 点击右上角的「开发者模式」开关
+   - Click the "Developer Mode" switch in the top right corner
 
-4. **加载扩展**
+4. **Load the extension**
 
-   - 点击「加载已解压的扩展程序」
-   - 选择项目根目录（包含 `manifest.json` 的文件夹）
+   - Click "Load unpacked extension"
+   - Select the project root directory (the folder containing `manifest.json`)
 
-5. **完成安装**
-   - 扩展图标将出现在浏览器工具栏
-   - 点击图标即可打开简历填写助手
+5. **Installation complete**
+   - The extension icon will appear in the browser toolbar
+   - Click the icon to open the resume filling assistant
 
-### 方式二：Edge 浏览器安装
+### Method 2: Edge Browser Installation
 
-Edge 浏览器同样支持 Chrome 扩展：
+Edge browser also supports Chrome extensions:
 
-1. 打开 `edge://extensions/`
-2. 开启「开发人员模式」
-3. 点击「加载解压缩的扩展」
-4. 选择项目目录
+1. Open `edge://extensions/`
+2. Enable "Developer Mode"
+3. Click "Load unpacked extension"
+4. Select the project directory
 
-## 🚀 使用教程
+## 🚀 Usage Tutorial
 
-### 第一步：配置 API（可选但推荐）
+### Step 1: Configure API (Optional but Recommended)
 
-1. 点击扩展图标，切换到「⚙️ 设置」标签页
-2. **配置 AI 模型**（用于内容优化，推荐）
-   - 选择模型提供商（如 DeepSeek、Kimi 等）
-   - 填入对应的 API Key
-   - 点击「🔗 测试连接」验证配置
-3. **配置简历解析 API**（用于解析 PDF/DOCX 格式简历）
-   - 在 [阿里云市场](https://market.aliyun.com/detail/cmapi034316) 购买简历解析服务
-   - 填入 API URL 和 APP Code
+1. Click the extension icon, switch to the "⚙️ Settings" tab
+2. **Configure AI Model** (for content optimization, recommended)
+   - Select model provider (e.g., DeepSeek, Kimi, etc.)
+   - Enter the corresponding API Key
+   - Click "🔗 Test Connection" to verify the configuration
+3. **Configure Resume Parsing API** (for parsing PDF/DOCX format resumes)
+   - Purchase resume parsing service from [Alibaba Cloud Market](https://market.aliyun.com/detail/cmapi034316)
+   - Enter API URL and APP Code
 
-### 第二步：填写或导入简历
+### Step 2: Fill or Import Resume
 
-#### 方式 A：智能上传解析
+#### Method A: Intelligent Upload Parsing
 
-1. 在「📝 简历填写」标签页顶部找到上传区域
-2. 拖放简历文件或点击选择文件
-3. 等待解析完成，点击「使用解析数据」按钮
-4. 简历信息将自动填充到表单中
+1. Find the upload area at the top of the "📝 Resume Filling" tab
+2. Drag and drop resume file or click to select file
+3. Wait for parsing to complete, click "Use Parsed Data" button
+4. Resume information will be automatically filled into the form
 
-#### 方式 B：手动填写
+#### Method B: Manual Filling
 
-1. 直接在表单中填写各项信息
-2. 点击「+ 添加」按钮可添加多条经历
-3. 数据会自动保存，也可点击「💾 保存」手动保存
+1. Directly fill in all information in the form
+2. Click the "+ Add" button to add multiple entries
+3. Data is automatically saved, or you can click "💾 Save" to manually save
 
-#### 方式 C：导入 JSON
+#### Method C: Import JSON
 
-1. 如果有之前导出的 JSON 文件
-2. 直接拖放到上传区域即可导入
+1. If you have a previously exported JSON file
+2. Directly drag and drop it into the upload area to import
 
-### 第三步：AI 优化简历（可选）
+### Step 3: AI Resume Optimization (Optional)
 
-1. 确保已配置 AI 模型 API Key
-2. 填写好简历的描述性内容（自我介绍、工作描述、项目描述等）
-3. 点击「✨ AI 优化」按钮
-4. 系统会逐个优化所有描述性内容
-5. 优化完成后自动填充回表单
+1. Ensure AI model API Key is configured
+2. Fill in descriptive content in the resume (self-introduction, job description, project description, etc.)
+3. Click the "✨ AI Optimize" button
+4. The system will optimize all descriptive content one by one
+5. Optimized content will be automatically filled back into the form
 
-### 第四步：在招聘网站填充简历
+### Step 4: Fill Resume on Recruitment Website
 
-#### 一键预填（推荐）
+#### One-click Pre-fill (Recommended)
 
-1. 打开目标招聘网站的简历填写页面
-2. 点击扩展图标打开弹窗
-3. 点击「📋 预填」按钮
-4. 扩展会自动识别并填充表单字段
-5. 填充完成后会显示填充详情
+1. Open the resume filling page of the target recruitment website
+2. Click the extension icon to open the popup
+3. Click the "📋 Pre-fill" button
+4. The extension will automatically identify and fill form fields
+5. Filling details will be displayed after completion
 
-#### 字段级精准填充
+#### Field-level Precise Filling
 
-1. 找到需要填充的字段，点击旁边的「↗」按钮
-2. 弹窗会自动关闭，页面进入「指向填充模式」
-3. 在网页中点击目标输入框
-4. 字段值将被精准填入
-5. 按 `Esc` 可取消操作
+1. Find the field you want to fill, click the "↗" button next to it
+2. The popup will automatically close, and the page enters "Point-and-Fill Mode"
+3. Click the target input box on the webpage
+4. The field value will be precisely filled in
+5. Press `Esc` to cancel operation
 
-### 第五步：导出备份
+### Step 5: Export Backup
 
-1. 点击「📤 导出」按钮
-2. 选择导出格式：
-   - **JSON**：用于数据备份和导入
-   - **LaTeX**：生成专业简历文档，可在 Overleaf 编辑打印
-   - **🤖 AI 生成简历介绍**：调用 AI 智能生成专业自我介绍
-     - 生成完成后可复制、填入自我描述、或下载为 TXT 文件
-   - **简历介绍提示词**：导出用于与 AI 交互的结构化提示词（支持 `.md`/`.txt`），文件名自动命名为"用户姓名\_简历提示词\_日期"
+1. Click the "📤 Export" button
+2. Select export format:
+   - **JSON**: For data backup and import
+   - **LaTeX**: Generate professional resume documents that can be edited and printed on Overleaf
+   - **🤖 AI-generated Resume Introduction**: Call AI to intelligently generate professional self-introductions
+     - After generation, you can copy, fill into self-description, or download as TXT file
+   - **Resume Introduction Prompts**: Export structured prompts for interacting with AI (supports `.md`/`.txt`), filename automatically named "Username_Resume_Prompt_Date"
 
-## 🌐 支持的招聘网站
+## 🌐 Supported Recruitment Websites
 
-本扩展采用通用表单识别技术，理论上支持所有招聘网站，包括但不限于：
+This extension uses universal form recognition technology and theoretically supports all recruitment websites, including but not limited to:
 
-- ✅ 智联招聘 (zhaopin.com)
-- ✅ 前程无忧 (51job.com)
-- ✅ 猎聘网 (liepin.com)
-- ✅ Boss 直聘 (zhipin.com)
-- ✅ 拉勾网 (lagou.com)
-- ✅ 脉脉 (maimai.cn)
-- ✅ 实习僧 (shixiseng.com)
-- ✅ 牛客网 (nowcoder.com)
-- ✅ 字节跳动校招等各大公司官方招聘页面
+- ✅ Zhaopin.com
+- ✅ 51job.com
+- ✅ Liepin.com
+- ✅ Boss Zhipin (zhipin.com)
+- ✅ Lagou.com
+- ✅ Maimai.cn
+- ✅ Shixiseng.com
+- ✅ Nowcoder.com
+- ✅ ByteDance campus recruitment and other major company official recruitment pages
 
-> 💡 提示：如果某个网站的表单无法自动识别，可以使用「字段级精准填充」功能手动指定填充位置。
+> 💡 Tip: If the form on a website cannot be automatically recognized, you can use the "field-level precise filling" function to manually specify the filling position.
 
-## 🛠️ 技术栈
+## 🛠️ Technology Stack
 
-- **前端框架**：原生 JavaScript (ES6+)
-- **扩展标准**：Chrome Extensions Manifest V3
-- **存储方案**：Chrome Storage API + localStorage
-- **样式方案**：原生 CSS（CSS 变量、Flexbox、Grid）
-- **文档格式**：LaTeX（ctex 中文支持）
-- **API 集成**：
-  - 阿里云简历解析 API
-  - OpenAI 兼容格式的大模型 API（DeepSeek、豆包（火山引擎）、通义千问等）
+- **Frontend Framework**: Native JavaScript (ES6+)
+- **Extension Standard**: Chrome Extensions Manifest V3
+- **Storage Solution**: Chrome Storage API + localStorage
+- **Styling Solution**: Native CSS (CSS variables, Flexbox, Grid)
+- **Document Format**: LaTeX (ctex Chinese support)
+- **API Integration**:
+  - Alibaba Cloud resume parsing API
+  - OpenAI-compatible large model APIs (DeepSeek, Doubao (Volcano Engine), Tongyi Qianwen, etc.)
 
-## ⚠️ 注意事项
+## ⚠️ Notes
 
-1. **API 配置**：简历解析功能需要配置 API，否则只能使用 JSON 导入
-2. **AI 优化**：需要配置 AI 模型 API Key 才能使用优化功能
-3. **网站兼容性**：部分网站可能使用特殊的表单组件，建议使用字段级填充
-4. **数据安全**：所有数据仅存储在本地浏览器中，不会上传到任何服务器
-5. **浏览器权限**：扩展需要 `activeTab`、`scripting`、`storage` 权限才能正常工作
-6. **特殊页面**：`chrome://`、`edge://`、`about:` 等系统页面不支持内容脚本注入
+1. **API Configuration**: Resume parsing functionality requires API configuration, otherwise only JSON import can be used
+2. **AI Optimization**: AI model API Key is required to use optimization features
+3. **Website Compatibility**: Some websites may use special form components, it is recommended to use field-level filling
+4. **Data Security**: All data is only stored locally in the browser and will not be uploaded to any server
+5. **Browser Permissions**: The extension requires `activeTab`, `scripting`, and `storage` permissions to function properly
+6. **Special Pages**: System pages like `chrome://`, `edge://`, `about:` do not support content script injection
 
-## 📋 更新日志
+## 📋 Changelog
 
-### v1.0（当前版本）
+### v1.0 (Current Version)
 
-## 📄 开源许可
+## 📄 Open Source License
 
-本项目采用 [MIT License](LICENSE) 开源许可证。
+This project is licensed under the [MIT License](LICENSE).
 
-## 🤝 贡献与反馈
+## 🤝 Contribution and Feedback
 
-欢迎提交 Issue 和 Pull Request！
+Welcome to submit Issues and Pull Requests!
 
-- 🐛 发现 Bug？请提交 [Issue](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
-- 💡 有新想法？欢迎提交 [Feature Request](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
-- 🔧 想贡献代码？欢迎提交 [Pull Request](https://github.com/itxaiohanglover/offer-laolao-plugin/pulls)
+- 🐛 Found a bug? Please submit an [Issue](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
+- 💡 Have a new idea? Welcome to submit a [Feature Request](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
+- 🔧 Want to contribute code? Welcome to submit a [Pull Request](https://github.com/itxaiohanglover/offer-laolao-plugin/pulls)
 
 ---
 
 <p align="center">
-  <strong>让求职更轻松 ✨</strong>
+  <strong>Make job hunting easier ✨</strong>
 </p>
