@@ -152,7 +152,7 @@ onUnmounted(() => {
 
     <footer class="footer-section">
       <div class="footer-content">
-        <p>© 2025 简历自动填写助手 Resume Helper</p>
+        <p>© 2025 简历自动填写助手 Offer捞捞</p>
         <div class="footer-links">
           <a href="#">隐私协议</a>
           <a href="#">使用文档</a>
