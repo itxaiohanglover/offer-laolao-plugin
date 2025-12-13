@@ -1,5 +1,17 @@
 // 操作按钮处理器模块
 // 处理保存、重置、导出、自动填写等操作按钮
+// 已迁移到新架构：使用 StorageService、NotificationService 和 EventBus
+
+/**
+ * 获取通知服务（统一辅助函数）
+ * @returns {Function} 通知函数
+ */
+function getNotificationService() {
+  const notification = window.OfferLaolao?.Services?.NotificationService;
+  return notification 
+    ? (msg, type) => notification.show(msg, type)
+    : (typeof showNotification === 'function' ? showNotification : () => {});
+}
 
 /**
  * 初始化操作按钮
@@ -7,12 +19,25 @@
 function initActionButtons() {
   console.log("Initializing action buttons");
 
+  // 使用新架构的服务
+  const storage = window.OfferLaolao?.Services?.StorageService;
+  const EventBus = window.OfferLaolao?.Core?.EventBus;
+  const Constants = window.OfferLaolao?.Config?.Constants;
+  const showNotify = getNotificationService();
+
   // 保存简历按钮
   var saveResumeBtn = document.getElementById("save-resume");
   if (saveResumeBtn) {
     saveResumeBtn.addEventListener("click", function () {
-      autoSaveFormData();
-      showNotification("简历已保存", "success");
+      if (typeof autoSaveFormData === 'function') {
+        autoSaveFormData();
+      }
+      showNotify("简历已保存", "success");
+      
+      // 触发事件
+      if (EventBus) {
+        EventBus.emit('form:saved', { manual: true });
+      }
     });
   }
 
@@ -21,12 +46,29 @@ function initActionButtons() {
   if (resetResumeBtn) {
     resetResumeBtn.addEventListener("click", function () {
       if (confirm("确定要重置所有简历数据吗？此操作不可恢复。")) {
-        localStorage.removeItem("resumeData");
+        const storageKey = Constants?.STORAGE_KEYS?.RESUME_DATA || 'resumeData';
+        
+        // 使用新架构的存储服务
+        if (storage) {
+          storage.remove(storageKey);
+        } else {
+          // 兼容旧代码
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(storageKey);
+          }
+        }
+        
         var inputs = document.querySelectorAll("input, select, textarea");
         for (var i = 0; i < inputs.length; i++) {
           inputs[i].value = "";
         }
-        showNotification("简历数据已重置", "success");
+        
+        showNotify("简历数据已重置", "success");
+        
+        // 触发事件
+        if (EventBus) {
+          EventBus.emit('form:reset', {});
+        }
       }
     });
   }
@@ -60,7 +102,12 @@ function initActionButtons() {
   if (saveSettingsBtn) {
     saveSettingsBtn.addEventListener("click", function () {
       saveAllSettings();
-      showNotification("设置已保存", "success");
+      showNotify("设置已保存", "success");
+      
+      // 触发事件
+      if (EventBus) {
+        EventBus.emit('settings:saved', {});
+      }
     });
   }
 
@@ -134,8 +181,19 @@ function saveSettingsAuto() {
 
 /**
  * 保存所有设置
+ * 已迁移到新架构：使用 StorageService
  */
 function saveAllSettings() {
+  // 使用新架构的存储服务
+  const storage = window.OfferLaolao?.Services?.StorageService;
+  const Constants = window.OfferLaolao?.Config?.Constants;
+  const EventBus = window.OfferLaolao?.Core?.EventBus;
+  
+  // 兼容旧代码
+  const saveData = storage 
+    ? (data, key) => storage.saveSync(key, data)
+    : (typeof saveDataToStorage === 'function' ? saveDataToStorage : () => false);
+
   // 保存模型配置
   var providerSelect = document.getElementById("model-provider");
   var modelSelect = document.getElementById("model-select");
@@ -158,9 +216,17 @@ function saveAllSettings() {
     appCode: parseAppCodeInput ? parseAppCodeInput.value : "",
   };
 
-  // 分别保存两种配置到 localStorage
-  saveDataToStorage(modelSettings, "modelSettings");
-  saveDataToStorage(parseSettings, "parseSettings");
+  // 分别保存两种配置
+  const modelSettingsKey = Constants?.STORAGE_KEYS?.MODEL_SETTINGS || 'modelSettings';
+  const parseSettingsKey = Constants?.STORAGE_KEYS?.PARSE_SETTINGS || 'parseSettings';
+  
+  saveData(modelSettings, modelSettingsKey);
+  saveData(parseSettings, parseSettingsKey);
+  
+  // 触发设置变更事件
+  if (EventBus) {
+    EventBus.emit('settings:changed', { modelSettings, parseSettings });
+  }
 
   // 同时保存到 chrome.storage.local 供 background script 使用
   if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
@@ -266,10 +332,24 @@ function initModelSettings() {
 
 /**
  * 加载模型设置
+ * 已迁移到新架构：使用 StorageService
  */
 function loadModelSettings() {
-  // 先从 localStorage 加载
-  var settings = loadDataFromStorage("modelSettings");
+  // 使用新架构的存储服务
+  const storage = window.OfferLaolao?.Services?.StorageService;
+  const Constants = window.OfferLaolao?.Config?.Constants;
+  
+  // 兼容旧代码
+  const loadData = storage 
+    ? (key) => storage.loadSync(key, {})
+    : (typeof loadDataFromStorage === 'function' ? loadDataFromStorage : () => ({}));
+  const saveData = storage 
+    ? (data, key) => storage.saveSync(key, data)
+    : (typeof saveDataToStorage === 'function' ? saveDataToStorage : () => false);
+
+  // 先从存储加载
+  const modelSettingsKey = Constants?.STORAGE_KEYS?.MODEL_SETTINGS || 'modelSettings';
+  var settings = loadData(modelSettingsKey);
   if (!settings || typeof settings !== "object") {
     settings = { provider: "deepseek", model: "", apiKey: "", customUrl: "" };
   }
@@ -285,8 +365,8 @@ function loadModelSettings() {
         var chromeSettings = result.modelSettings;
         if (chromeSettings.apiKey || chromeSettings.model) {
           applyModelSettingsToUI(chromeSettings);
-          // 同步到 localStorage
-          saveDataToStorage(chromeSettings, "modelSettings");
+          // 同步到存储
+          saveData(chromeSettings, modelSettingsKey);
         }
       } else if (settings.apiKey) {
         // 如果 chrome.storage 没有设置但 localStorage 有，同步过去
@@ -414,10 +494,15 @@ function updateModelOptions(providerId, selectedModel) {
 
 /**
  * 确保 content script 已注入
+ * 已迁移到新架构：使用 NotificationService
  */
 function withContentScript(tabId, callback) {
   if (!tabId) {
-    showNotification("未找到有效的标签页", "error");
+    const notification = window.OfferLaolao?.Services?.NotificationService;
+    const showNotify = notification 
+      ? (msg, type) => notification.error(msg)
+      : (typeof showNotification === 'function' ? showNotification : () => {});
+    showNotify("未找到有效的标签页", "error");
     return;
   }
 
@@ -431,7 +516,11 @@ function withContentScript(tabId, callback) {
     });
   } catch (error) {
     console.error("Error ensuring content script:", error);
-    showNotification("无法连接到页面，请刷新页面后重试", "error");
+    const notification = window.OfferLaolao?.Services?.NotificationService;
+    const showNotify = notification 
+      ? (msg, type) => notification.error(msg)
+      : (typeof showNotification === 'function' ? showNotification : () => {});
+    showNotify("无法连接到页面，请刷新页面后重试", "error");
   }
 }
 
@@ -448,15 +537,19 @@ function injectContentScript(tabId, callback) {
       function () {
         if (chrome.runtime.lastError) {
           console.error("Error injecting script:", chrome.runtime.lastError);
-          showNotification("无法注入脚本，请刷新页面后重试", "error");
+          getNotificationService()("无法注入脚本，请刷新页面后重试", "error");
         } else if (typeof callback === "function") {
           setTimeout(callback, 300);
         }
       }
     );
-  } else {
-    showNotification("请刷新页面后重试", "error");
-  }
+    } else {
+      const notification = window.OfferLaolao?.Services?.NotificationService;
+      const showNotify = notification 
+        ? (msg, type) => notification.error(msg)
+        : (typeof showNotification === 'function' ? showNotification : () => {});
+      showNotify("请刷新页面后重试", "error");
+    }
 }
 
 /**
@@ -716,7 +809,7 @@ function showExportFormatDialog() {
     ) {
       window.exportResumePromptAsMarkdown(resumeData);
     } else {
-      showNotification("提示词导出功能未加载，请刷新页面重试", "error");
+      getNotificationService()("提示词导出功能未加载，请刷新页面重试", "error");
     }
   });
 
@@ -731,7 +824,7 @@ function showExportFormatDialog() {
     ) {
       window.exportResumePromptAsText(resumeData);
     } else {
-      showNotification("提示词导出功能未加载，请刷新页面重试", "error");
+      getNotificationService()("提示词导出功能未加载，请刷新页面重试", "error");
     }
   });
 
@@ -765,7 +858,7 @@ function exportAsJSON() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  showNotification("JSON 简历数据已导出", "success");
+      getNotificationService()("JSON 简历数据已导出", "success");
 }
 
 /**
@@ -784,7 +877,7 @@ function exportAsLatex() {
     window.exportResumeToLatex(resumeData);
   } else {
     console.error("exportResumeToLatex function not found");
-    showNotification("LaTeX 导出功能未加载，请刷新页面重试", "error");
+    getNotificationService()("LaTeX 导出功能未加载，请刷新页面重试", "error");
   }
 }
 
@@ -804,7 +897,7 @@ function showOptimizeDialog() {
   }
 
   if (!config || !config.apiKey) {
-    showNotification("请先在设置中配置 AI 模型 API Key", "warning");
+    getNotificationService()("请先在设置中配置 AI 模型 API Key", "warning");
     // 切换到设置页面
     var settingsTab = document.getElementById("mode-settings");
     if (settingsTab) {
@@ -850,7 +943,7 @@ function showOptimizeDialog() {
   }
 
   if (!hasContent) {
-    showNotification(
+    getNotificationService()(
       "请先填写简历的描述性内容（自我介绍、工作描述、项目描述等）",
       "warning"
     );
@@ -1158,7 +1251,7 @@ function showOptimizeDialog() {
           overlay.remove();
         });
 
-      showNotification("简历优化完成！", "success");
+      getNotificationService()("简历优化完成！", "success");
     } catch (error) {
       console.error("优化失败:", error);
       progressDiv.style.display = "none";
@@ -1217,7 +1310,7 @@ function showOptimizeDialog() {
           overlay.remove();
         });
 
-      showNotification("优化失败: " + error.message, "error");
+      getNotificationService()("优化失败: " + error.message, "error");
     }
   });
 
@@ -1242,7 +1335,7 @@ function showOptimizeDialog() {
  * 启动智能预填流程
  */
 function startSmartFill() {
-  showNotification("正在分析页面表单...", "info");
+  getNotificationService()("正在分析页面表单...", "info");
 
   // 收集简历数据
   var resumeData = collectFormData();
@@ -1259,7 +1352,7 @@ function startSmartFill() {
   }
 
   if (!hasData) {
-    showNotification("请先填写简历信息", "warning");
+    getNotificationService()("请先填写简历信息", "warning");
     return;
   }
 
@@ -1276,18 +1369,18 @@ function startSmartFill() {
           tabUrl.startsWith("chrome-extension://") ||
           tabUrl.startsWith("about:")
         ) {
-          showNotification("无法在此页面使用预填功能", "error");
+          getNotificationService()("无法在此页面使用预填功能", "error");
           return;
         }
 
         // 显示预填进度对话框
         showSmartFillDialog(tabId, resumeData, tabUrl);
       } else {
-        showNotification("未找到活动标签页", "error");
+        getNotificationService()("未找到活动标签页", "error");
       }
     });
   } else {
-    showNotification("浏览器扩展 API 不可用", "error");
+    getNotificationService()("浏览器扩展 API 不可用", "error");
   }
 }
 
@@ -1490,7 +1583,7 @@ function executeSmartFill(tabId, resumeData, overlay) {
     }
 
     if (closeBtn) closeBtn.style.display = "block";
-    showNotification("预填完成！", "success");
+    getNotificationService()("预填完成！", "success");
   }
 
   function showFillError(message) {
@@ -1503,7 +1596,7 @@ function executeSmartFill(tabId, resumeData, overlay) {
     }
 
     if (closeBtn) closeBtn.style.display = "block";
-    showNotification("预填失败: " + message, "error");
+    getNotificationService()("预填失败: " + message, "error");
   }
 
   // 关闭按钮事件
@@ -1547,7 +1640,7 @@ function showAIIntroGenerateDialog() {
   }
 
   if (!config || !config.apiKey) {
-    showNotification("请先在设置中配置 AI 模型 API Key", "warning");
+    getNotificationService()("请先在设置中配置 AI 模型 API Key", "warning");
     // 切换到设置页面
     var settingsTab = document.getElementById("mode-settings");
     if (settingsTab) {
@@ -1576,7 +1669,7 @@ function showAIIntroGenerateDialog() {
   }
 
   if (!hasData) {
-    showNotification(
+    getNotificationService()(
       "请先填写一些简历信息（如姓名、期望职位、教育经历等）",
       "warning"
     );
@@ -1895,10 +1988,10 @@ function showAIIntroGenerateDialog() {
           navigator.clipboard
             .writeText(intro)
             .then(function () {
-              showNotification("已复制到剪贴板", "success");
+              getNotificationService()("已复制到剪贴板", "success");
             })
             .catch(function () {
-              showNotification("复制失败，请手动复制", "error");
+              getNotificationService()("复制失败，请手动复制", "error");
             });
         });
 
@@ -1913,10 +2006,10 @@ function showAIIntroGenerateDialog() {
             if (typeof autoSaveFormData === "function") {
               autoSaveFormData();
             }
-            showNotification("已填入自我描述", "success");
+            getNotificationService()("已填入自我描述", "success");
             overlay.remove();
           } else {
-            showNotification("未找到自我描述输入框", "error");
+            getNotificationService()("未找到自我描述输入框", "error");
           }
         });
 
@@ -1957,7 +2050,7 @@ function showAIIntroGenerateDialog() {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
 
-          showNotification("AI 简历介绍已下载", "success");
+          getNotificationService()("AI 简历介绍已下载", "success");
         });
 
       // 关闭按钮
@@ -1967,7 +2060,7 @@ function showAIIntroGenerateDialog() {
           overlay.remove();
         });
 
-      showNotification("简历介绍生成完成！", "success");
+      getNotificationService()("简历介绍生成完成！", "success");
     } catch (error) {
       console.error("AI 生成失败:", error);
       progressDiv.style.display = "none";
@@ -2015,7 +2108,7 @@ function showAIIntroGenerateDialog() {
           overlay.remove();
         });
 
-      showNotification("生成失败: " + error.message, "error");
+      getNotificationService()("生成失败: " + error.message, "error");
     }
   });
 

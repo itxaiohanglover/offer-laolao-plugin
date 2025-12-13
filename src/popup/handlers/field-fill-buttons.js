@@ -1,34 +1,54 @@
 // 字段级自动填充按钮
 // 允许用户为单个字段触发「指向网页填写」模式
+// 已迁移到新架构：使用 NotificationService、EventBus 和配置
 
-const FIELD_AUTOFILL_CONFIGS = [
-  { id: "name", label: "姓名" },
-  { id: "gender", label: "性别" },
-  { id: "birth-date", label: "出生日期" },
-  { id: "phone", label: "手机号码" },
-  { id: "email", label: "电子邮箱" },
-  { id: "id-card", label: "身份证号" },
-  { id: "location", label: "所在地" },
-  { id: "political-status", label: "政治面貌" },
-  { id: "expected-position", label: "期望职位" },
-  { id: "expected-industry", label: "期望行业" },
-  { id: "expected-salary", label: "期望薪资" },
-  { id: "expected-location", label: "期望地点" },
-  { id: "internship-duration", label: "实习周期" },
-  { id: "available-time", label: "到岗时间" },
-  { id: "self-intro", label: "自我介绍" },
-];
+/**
+ * 获取字段填充配置
+ * 优先使用新架构的配置，否则使用默认配置
+ */
+function getFieldFillConfigs() {
+  const FieldConfig = window.OfferLaolao?.Config?.FieldConfig;
+  if (FieldConfig && FieldConfig.fieldFill && Array.isArray(FieldConfig.fieldFill)) {
+    return FieldConfig.fieldFill;
+  }
+  
+  // 兼容旧代码：默认配置
+  return [
+    { id: "name", label: "姓名" },
+    { id: "gender", label: "性别" },
+    { id: "birth-date", label: "出生日期" },
+    { id: "phone", label: "手机号码" },
+    { id: "email", label: "电子邮箱" },
+    { id: "id-card", label: "身份证号" },
+    { id: "location", label: "所在地" },
+    { id: "political-status", label: "政治面貌" },
+    { id: "expected-position", label: "期望职位" },
+    { id: "expected-industry", label: "期望行业" },
+    { id: "expected-salary", label: "期望薪资" },
+    { id: "expected-location", label: "期望地点" },
+    { id: "internship-duration", label: "实习周期" },
+    { id: "available-time", label: "到岗时间" },
+    { id: "self-intro", label: "自我介绍" },
+  ];
+}
+
+const FIELD_AUTOFILL_CONFIGS = getFieldFillConfigs();
 
 /**
  * 初始化字段填充按钮
+ * 已迁移到新架构：使用配置和事件总线
  */
 function initFieldFillButtons() {
-  if (!FIELD_AUTOFILL_CONFIGS || !Array.isArray(FIELD_AUTOFILL_CONFIGS)) {
+  // 使用新架构的配置
+  const configs = getFieldFillConfigs();
+  const EventBus = window.OfferLaolao?.Core?.EventBus;
+  
+  if (!configs || !Array.isArray(configs)) {
     return;
   }
 
   // 为静态字段添加按钮
-  FIELD_AUTOFILL_CONFIGS.forEach(function (config) {
+  configs.forEach(function (config) {
     var field = document.getElementById(config.id);
     if (field) {
       ensureFieldWrapper(field, config);
@@ -42,6 +62,11 @@ function initFieldFillButtons() {
 
   // 监听动态项的添加，为新添加的项也添加按钮
   observeDynamicItems();
+  
+  // 触发初始化完成事件
+  if (EventBus) {
+    EventBus.emit('field:fill:buttons:initialized', { count: configs.length });
+  }
 }
 
 /**
@@ -98,28 +123,44 @@ function attachFieldFillButtonListeners() {
 
 /**
  * 启动单字段填充流程
+ * 已迁移到新架构：使用 NotificationService 和 EventBus
  */
 function startSingleFieldFill(fieldId, fieldLabel) {
+  // 使用新架构的服务
+  const notification = window.OfferLaolao?.Services?.NotificationService;
+  const EventBus = window.OfferLaolao?.Core?.EventBus;
+  const Constants = window.OfferLaolao?.Config?.Constants;
+  
+  // 兼容旧代码
+  const showNotify = notification 
+    ? (msg, type) => notification.show(msg, type)
+    : (typeof showNotification === 'function' ? showNotification : () => {});
+  
   var fieldElement = document.getElementById(fieldId);
   if (!fieldElement) {
-    showNotification("未找到字段: " + fieldLabel, "error");
+    showNotify("未找到字段: " + fieldLabel, "error");
     return;
   }
 
   var fieldValue = getFieldValueForAutofill(fieldElement);
   if (fieldValue === "") {
-    showNotification("请先在弹窗中填写 " + fieldLabel, "warning");
+    showNotify("请先在弹窗中填写 " + fieldLabel, "warning");
     return;
   }
 
   if (typeof chrome === "undefined" || !chrome.tabs) {
-    showNotification("当前环境不支持自动填充", "error");
+    showNotify("当前环境不支持自动填充", "error");
     return;
   }
+  
+  // 触发字段填充开始事件
+  if (EventBus) {
+    EventBus.emit('field:fill:start', { fieldId, fieldLabel, value: fieldValue });
+  }
 
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     if (!tabs || tabs.length === 0 || !tabs[0].id) {
-      showNotification("未找到活动标签页", "error");
+      showNotify("未找到活动标签页", "error");
       return;
     }
 
@@ -134,7 +175,7 @@ function startSingleFieldFill(fieldId, fieldLabel) {
       tabUrl.startsWith("edge://") ||
       tabUrl.startsWith("about:")
     ) {
-      showNotification("当前页面不支持此功能，请在普通网页上使用", "error");
+      showNotify("当前页面不支持此功能，请在普通网页上使用", "error");
       return;
     }
 
@@ -162,7 +203,7 @@ function startSingleFieldFill(fieldId, fieldLabel) {
 
         // 检查是否有注入权限
         if (!chrome.scripting || !chrome.scripting.executeScript) {
-          showNotification("浏览器不支持脚本注入，请刷新页面后重试", "error");
+          showNotify("浏览器不支持脚本注入，请刷新页面后重试", "error");
           return;
         }
 
@@ -178,7 +219,7 @@ function startSingleFieldFill(fieldId, fieldLabel) {
                 chrome.runtime.lastError
               );
               var errorMsg = chrome.runtime.lastError.message || "未知错误";
-              showNotification(
+              showNotify(
                 "无法注入脚本: " + errorMsg + "。请刷新页面后重试",
                 "error"
               );
@@ -212,6 +253,9 @@ function startSingleFieldFill(fieldId, fieldLabel) {
 function sendFieldFillMessage(tabId, payload, fieldLabel, retryCount) {
   retryCount = retryCount || 0;
   var maxRetries = 2;
+  
+  // 从 payload 中提取 fieldId，确保在内部函数中可以访问
+  var fieldId = payload && payload.fieldId ? payload.fieldId : null;
 
   console.log(
     "Sending field fill message (attempt " + (retryCount + 1) + "):",
@@ -222,10 +266,26 @@ function sendFieldFillMessage(tabId, payload, fieldLabel, retryCount) {
   function showInstructionOnce() {
     if (hasShownInstruction) return;
     hasShownInstruction = true;
-    showNotification(
-      '请在网页中点击要填入 "' + fieldLabel + '" 的位置，按 Esc 可取消。',
-      "info"
-    );
+    
+    // 使用新架构的通知服务
+    const notification = window.OfferLaolao?.Services?.NotificationService;
+    const EventBus = window.OfferLaolao?.Core?.EventBus;
+    const Constants = window.OfferLaolao?.Config?.Constants;
+    const showNotify = notification 
+      ? (msg, type) => notification.show(msg, type)
+      : (typeof showNotification === 'function' ? showNotification : () => {});
+    
+    const message = Constants?.FIELD_FILL_MODE_MESSAGES?.START 
+      ? Constants.FIELD_FILL_MODE_MESSAGES.START.replace('{label}', fieldLabel)
+      : '请在网页中点击要填入 "' + fieldLabel + '" 的位置，按 Esc 可取消。';
+    
+    showNotify(message, "info");
+    
+    // 触发字段填充模式启动事件
+    if (EventBus) {
+      EventBus.emit('field:fill:mode:started', { fieldId, fieldLabel });
+    }
+    
     schedulePopupMinimize();
   }
 
@@ -273,14 +333,25 @@ function sendFieldFillMessage(tabId, payload, fieldLabel, retryCount) {
         }
 
         // 提供更友好的错误提示
+        const notification = window.OfferLaolao?.Services?.NotificationService;
+        const EventBus = window.OfferLaolao?.Core?.EventBus;
+        const showNotify = notification 
+          ? (msg, type) => notification.error(msg)
+          : (typeof showNotification === 'function' ? showNotification : () => {});
+        
         if (errorMsg.includes("Could not establish connection")) {
-          showNotification("无法连接到页面，请刷新页面后重试", "error");
+          showNotify("无法连接到页面，请刷新页面后重试", "error");
         } else if (errorMsg.includes("Receiving end does not exist")) {
-          showNotification("页面脚本未加载，请刷新页面后重试", "error");
+          showNotify("页面脚本未加载，请刷新页面后重试", "error");
         } else if (errorMsg.includes("message port closed")) {
-          showNotification("消息通道已关闭，请刷新页面后重试", "error");
+          showNotify("消息通道已关闭，请刷新页面后重试", "error");
         } else {
-          showNotification("连接失败: " + errorMsg + "，请刷新后重试", "error");
+          showNotify("连接失败: " + errorMsg + "，请刷新后重试", "error");
+        }
+        
+        // 触发字段填充失败事件
+        if (EventBus) {
+          EventBus.emit('field:fill:failed', { fieldId, fieldLabel, error: errorMsg });
         }
         return;
       }
@@ -288,10 +359,26 @@ function sendFieldFillMessage(tabId, payload, fieldLabel, retryCount) {
       console.log("Field fill message response:", response);
       if (response && response.success) {
         showInstructionOnce();
+        
+        // 触发字段填充成功事件
+        const EventBus = window.OfferLaolao?.Core?.EventBus;
+        if (EventBus) {
+          EventBus.emit('field:fill:success', { fieldId, fieldLabel });
+        }
       } else {
         var errorMsg =
           response && response.message ? response.message : "未知错误";
-        showNotification("无法启动字段填充模式: " + errorMsg, "error");
+        const notification = window.OfferLaolao?.Services?.NotificationService;
+        const showNotify = notification 
+          ? (msg, type) => notification.error(msg)
+          : (typeof showNotification === 'function' ? showNotification : () => {});
+        showNotify("无法启动字段填充模式: " + errorMsg, "error");
+        
+        // 触发字段填充失败事件
+        const EventBus = window.OfferLaolao?.Core?.EventBus;
+        if (EventBus) {
+          EventBus.emit('field:fill:failed', { fieldId, fieldLabel, error: errorMsg });
+        }
         return;
       }
 
@@ -427,8 +514,9 @@ function getFieldLabel(field) {
     var nameParts = field.name.match(/\[(\d+)\]\[([^\]]+)\]/);
     if (nameParts) {
       var fieldName = nameParts[2];
-      // 将字段名转换为中文标签
-      var labelMap = {
+      // 使用新架构的字段标签映射
+      const FieldConfig = window.OfferLaolao?.Config?.FieldConfig;
+      const labelMap = FieldConfig?.fieldLabelMap || {
         school: "学校",
         major: "专业",
         degree: "学历",

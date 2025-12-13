@@ -3,17 +3,33 @@
 
 /**
  * 加载表单数据
+ * 已迁移到新架构：使用 StorageService 和 NotificationService
  */
 function loadFormData() {
     return safeExecute(function() {
         console.log('Starting to load form data...');
         
-        var resumeData = safeExecute(loadDataFromStorage, null, ['resumeData'], {});
+        // 使用新架构的存储服务
+        const storage = window.OfferLaolao?.Services?.StorageService;
+        const notification = window.OfferLaolao?.Services?.NotificationService;
+        const Constants = window.OfferLaolao?.Config?.Constants;
+        const FieldConfig = window.OfferLaolao?.Config?.FieldConfig;
+        
+        // 兼容旧代码：如果新架构未加载，使用旧方法
+        const loadData = storage 
+            ? (key) => storage.loadSync(key, {})
+            : (typeof loadDataFromStorage === 'function' ? loadDataFromStorage : () => ({}));
+        const showNotify = notification 
+            ? (msg, type) => notification.show(msg, type)
+            : (typeof showNotification === 'function' ? showNotification : () => {});
+        
+        const storageKey = Constants?.STORAGE_KEYS?.RESUME_DATA || 'resumeData';
+        var resumeData = safeExecute(loadData, null, [storageKey], {});
         
         // 确保resumeData是对象且不为null
         if (!resumeData || typeof resumeData !== 'object' || Object.keys(resumeData).length === 0) {
             console.log('No valid resume data found in storage');
-            showNotification('没有找到保存的简历数据', 'info');
+            showNotify('没有找到保存的简历数据', 'info');
             // 首次打开且没有数据时，清理多余的空项
             setTimeout(function() {
                 if (typeof cleanupEmptyItems === 'function') {
@@ -31,14 +47,40 @@ function loadFormData() {
         console.log('Loading form data, available sections:', Object.keys(resumeData).join(', '));
         
         // 定义要加载的动态项目类型
+        // 使用新架构的工厂模式（如果可用）
+        const DynamicItemFactory = window.OfferLaolao?.Factories?.DynamicItemFactory;
+        const useNewFactory = !!DynamicItemFactory;
+        
+        // 创建函数映射（兼容新旧架构）
+        const createItemFunc = (type) => {
+            if (useNewFactory) {
+                return (index) => DynamicItemFactory.create(type, index);
+            }
+            // 兼容旧代码
+            const funcMap = {
+                skill: typeof createSkillItem === 'function' ? createSkillItem : null,
+                education: typeof createEducationItem === 'function' ? createEducationItem : null,
+                workExperience: typeof createWorkExperienceItem === 'function' ? createWorkExperienceItem : null,
+                project: typeof createProjectItem === 'function' ? createProjectItem : null,
+                language: typeof createLanguageItem === 'function' ? createLanguageItem : null,
+                customField: typeof createCustomFieldItem === 'function' ? createCustomFieldItem : null
+            };
+            return funcMap[type] || null;
+        };
+        
         const dynamicSections = [
-            { key: 'skills', listId: 'skills-list', createFunc: createSkillItem, title: '技能' },
-            { key: 'education', listId: 'education-list', createFunc: createEducationItem, title: '教育经历' },
-            { key: 'workExperience', listId: 'internship-list', createFunc: createWorkExperienceItem, title: '工作经验' },
-            { key: 'projects', listId: 'project-list', createFunc: createProjectItem, title: '项目经验' },
-            { key: 'languages', listId: 'language-list', createFunc: createLanguageItem, title: '语言能力' },
-            { key: 'customFields', listId: 'custom-field-list', createFunc: createCustomFieldItem, title: '自定义字段' }
+            { key: 'skills', type: 'skill', listId: 'skills-list', title: '技能' },
+            { key: 'education', type: 'education', listId: 'education-list', title: '教育经历' },
+            { key: 'workExperience', type: 'workExperience', listId: 'internship-list', title: '工作经验' },
+            { key: 'projects', type: 'project', listId: 'project-list', title: '项目经验' },
+            { key: 'languages', type: 'language', listId: 'language-list', title: '语言能力' },
+            { key: 'customFields', type: 'customField', listId: 'custom-field-list', title: '自定义字段' }
         ];
+        
+        // 为每个section添加createFunc
+        dynamicSections.forEach(section => {
+            section.createFunc = createItemFunc(section.type);
+        });
         
         // 加载各个动态项目部分
         dynamicSections.forEach(section => {
@@ -169,7 +211,12 @@ function loadFormData() {
         }
         
         console.log('Form data loading completed successfully');
-        showNotification('简历数据加载成功', 'success');
+        showNotify('简历数据加载成功', 'success');
+        
+        // 触发事件总线事件（如果可用）
+        if (window.OfferLaolao?.Core?.EventBus) {
+            window.OfferLaolao.Core.EventBus.emit('form:loaded', { resumeData });
+        }
         
     }, this);
 }

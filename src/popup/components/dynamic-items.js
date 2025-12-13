@@ -1,5 +1,7 @@
 // 动态项组件模块
 // 创建和管理各种动态表单项
+// 注意：此文件中的创建函数已由 DynamicItemFactory 替代
+// 保留这些函数作为向后兼容层，建议新代码使用 DynamicItemFactory
 
 /**
  * 更新项目索引
@@ -31,8 +33,16 @@ function updateItemIndices(listId) {
  * 创建技能项
  * @param {number} index - 项目索引
  * @returns {HTMLElement} 技能项元素
+ * @deprecated 建议使用 DynamicItemFactory.create('skill', index)
  */
 function createSkillItem(index) {
+    // 优先使用新架构的工厂模式
+    const DynamicItemFactory = window.OfferLaolao?.Factories?.DynamicItemFactory;
+    if (DynamicItemFactory) {
+        return DynamicItemFactory.create('skill', index);
+    }
+    
+    // 兼容旧代码：如果工厂模式不可用，使用原始实现
     var div = document.createElement('div');
     div.className = 'dynamic-item';
     div.style.position = 'relative';
@@ -74,9 +84,11 @@ function createSkillItem(index) {
                         }
                     }
                 } else {
-                    if (typeof showNotification === 'function') {
-                        showNotification('至少需要保留一个非空技能项', 'warning');
-                    }
+                    const notification = window.OfferLaolao?.Services?.NotificationService;
+                    const showNotify = notification 
+                        ? (msg, type) => notification.warning(msg)
+                        : (typeof showNotification === 'function' ? showNotification : () => {});
+                    showNotify('至少需要保留一个非空技能项', 'warning');
                 }
             }
         });
@@ -94,8 +106,16 @@ function createSkillItem(index) {
  * 创建教育经历项
  * @param {number} index - 项目索引
  * @returns {HTMLElement} 教育经历项元素
+ * @deprecated 建议使用 DynamicItemFactory.create('education', index)
  */
 function createEducationItem(index) {
+    // 优先使用新架构的工厂模式
+    const DynamicItemFactory = window.OfferLaolao?.Factories?.DynamicItemFactory;
+    if (DynamicItemFactory) {
+        return DynamicItemFactory.create('education', index);
+    }
+    
+    // 兼容旧代码：如果工厂模式不可用，使用原始实现
     var div = document.createElement('div');
     div.className = 'dynamic-item';
     div.style.position = 'relative';
@@ -154,9 +174,11 @@ function createEducationItem(index) {
                         }
                     }
                 } else {
-                    if (typeof showNotification === 'function') {
-                        showNotification('至少需要保留一个非空教育经历项', 'warning');
-                    }
+                    const notification = window.OfferLaolao?.Services?.NotificationService;
+                    const showNotify = notification 
+                        ? (msg, type) => notification.warning(msg)
+                        : (typeof showNotification === 'function' ? showNotification : () => {});
+                    showNotify('至少需要保留一个非空教育经历项', 'warning');
                 }
             }
         });
@@ -206,8 +228,16 @@ function createEducationItem(index) {
  * 创建工作经历项
  * @param {number} index - 项目索引
  * @returns {HTMLElement} 工作经历项元素
+ * @deprecated 建议使用 DynamicItemFactory.create('workExperience', index)
  */
 function createWorkExperienceItem(index) {
+    // 优先使用新架构的工厂模式
+    const DynamicItemFactory = window.OfferLaolao?.Factories?.DynamicItemFactory;
+    if (DynamicItemFactory) {
+        return DynamicItemFactory.create('workExperience', index);
+    }
+    
+    // 兼容旧代码：如果工厂模式不可用，使用原始实现
     var div = document.createElement('div');
     div.className = 'dynamic-item';
     div.style.position = 'relative';
@@ -256,9 +286,11 @@ function createWorkExperienceItem(index) {
                         }
                     }
                 } else {
-                    if (typeof showNotification === 'function') {
-                        showNotification('至少需要保留一个非空实习/工作经历项', 'warning');
-                    }
+                    const notification = window.OfferLaolao?.Services?.NotificationService;
+                    const showNotify = notification 
+                        ? (msg, type) => notification.warning(msg)
+                        : (typeof showNotification === 'function' ? showNotification : () => {});
+                    showNotify('至少需要保留一个非空实习/工作经历项', 'warning');
                 }
             }
         });
@@ -308,8 +340,16 @@ function createWorkExperienceItem(index) {
  * 创建项目经历项
  * @param {number} index - 项目索引
  * @returns {HTMLElement} 项目经历项元素
+ * @deprecated 建议使用 DynamicItemFactory.create('project', index)
  */
 function createProjectItem(index) {
+    // 优先使用新架构的工厂模式
+    const DynamicItemFactory = window.OfferLaolao?.Factories?.DynamicItemFactory;
+    if (DynamicItemFactory) {
+        return DynamicItemFactory.create('project', index);
+    }
+    
+    // 兼容旧代码：如果工厂模式不可用，使用原始实现
     var div = document.createElement('div');
     div.className = 'dynamic-item';
     div.style.position = 'relative';
@@ -356,9 +396,11 @@ function createProjectItem(index) {
                         }
                     }
                 } else {
-                    if (typeof showNotification === 'function') {
-                        showNotification('至少需要保留一个非空项目经历项', 'warning');
-                    }
+                    const notification = window.OfferLaolao?.Services?.NotificationService;
+                    const showNotify = notification 
+                        ? (msg, type) => notification.warning(msg)
+                        : (typeof showNotification === 'function' ? showNotification : () => {});
+                    showNotify('至少需要保留一个非空项目经历项', 'warning');
                 }
             }
         });
@@ -408,8 +450,16 @@ function createProjectItem(index) {
  * 创建语言能力项
  * @param {number} index - 项目索引
  * @returns {HTMLElement} 语言能力项元素
+ * @deprecated 建议使用 DynamicItemFactory.create('language', index)
  */
 function createLanguageItem(index) {
+    // 优先使用新架构的工厂模式
+    const DynamicItemFactory = window.OfferLaolao?.Factories?.DynamicItemFactory;
+    if (DynamicItemFactory) {
+        return DynamicItemFactory.create('language', index);
+    }
+    
+    // 兼容旧代码：如果工厂模式不可用，使用原始实现
     var div = document.createElement('div');
     div.className = 'dynamic-item';
     div.style.position = 'relative';
@@ -455,9 +505,11 @@ function createLanguageItem(index) {
                         }
                     }
                 } else {
-                    if (typeof showNotification === 'function') {
-                        showNotification('至少需要保留一个非空语言能力项', 'warning');
-                    }
+                    const notification = window.OfferLaolao?.Services?.NotificationService;
+                    const showNotify = notification 
+                        ? (msg, type) => notification.warning(msg)
+                        : (typeof showNotification === 'function' ? showNotification : () => {});
+                    showNotify('至少需要保留一个非空语言能力项', 'warning');
                 }
             }
         });
@@ -479,8 +531,16 @@ function createLanguageItem(index) {
  * 创建自定义字段项
  * @param {number} index - 项目索引
  * @returns {HTMLElement} 自定义字段项元素
+ * @deprecated 建议使用 DynamicItemFactory.create('customField', index)
  */
 function createCustomFieldItem(index) {
+    // 优先使用新架构的工厂模式
+    const DynamicItemFactory = window.OfferLaolao?.Factories?.DynamicItemFactory;
+    if (DynamicItemFactory) {
+        return DynamicItemFactory.create('customField', index);
+    }
+    
+    // 兼容旧代码：如果工厂模式不可用，使用原始实现
     var div = document.createElement('div');
     div.className = 'dynamic-item';
     div.style.position = 'relative';
@@ -515,9 +575,11 @@ function createCustomFieldItem(index) {
                         }
                     }
                 } else {
-                    if (typeof showNotification === 'function') {
-                        showNotification('至少需要保留一个非空自定义字段项', 'warning');
-                    }
+                    const notification = window.OfferLaolao?.Services?.NotificationService;
+                    const showNotify = notification 
+                        ? (msg, type) => notification.warning(msg)
+                        : (typeof showNotification === 'function' ? showNotification : () => {});
+                    showNotify('至少需要保留一个非空自定义字段项', 'warning');
                 }
             }
         });

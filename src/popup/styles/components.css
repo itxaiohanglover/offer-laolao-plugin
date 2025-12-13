@@ -1,0 +1,263 @@
+/* ============================================
+   组件样式
+   ============================================ */
+
+/* 动态列表 */
+.dynamic-list {
+  margin-bottom: 12px;
+}
+
+.dynamic-item {
+  padding: 16px;
+  margin-bottom: 12px;
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  position: relative;
+  transition: all 0.2s ease;
+  overflow: hidden; /* 防止内容溢出 */
+}
+
+.dynamic-item:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.dynamic-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 文件上传区域 */
+.drop-area {
+  border: 2px dashed var(--primary-light);
+  border-radius: var(--radius-lg);
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--primary-lighter);
+}
+
+.drop-area:hover {
+  border-color: var(--primary-color);
+  background: white;
+}
+
+.drop-area-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.drop-area-text {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.drop-area-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0 0 8px 0;
+}
+
+.drop-area-warning {
+  color: var(--accent-color);
+  font-size: 11px;
+  margin: 8px 0 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* 解析结果区域 */
+.parse-result {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-light);
+  border-radius: var(--radius-md);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* 通知样式 */
+.notification {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  color: white;
+  font-size: 14px;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification.success {
+  background: var(--success-color);
+}
+
+.notification.error {
+  background: var(--error-color);
+}
+
+.notification.warning {
+  background: var(--warning-color);
+}
+
+.notification.info {
+  background: var(--primary-color);
+}
+
+/* 设置页面特殊样式 */
+.settings-section {
+  border-left: 3px solid var(--primary-color);
+}
+
+.settings-section.api-section {
+  border-left-color: var(--success-color);
+}
+
+.settings-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.settings-link {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.settings-link:hover {
+  text-decoration: underline;
+}
+
+/* API 指南卡片 */
+.api-guide {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--primary-lighter);
+  border: 1px solid var(--primary-light);
+  border-radius: var(--radius-md);
+}
+
+.api-guide-title {
+  font-size: 13px;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.api-guide-list {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  padding-left: 18px;
+  line-height: 2;
+}
+
+.api-guide-list a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.api-guide-list a:hover {
+  text-decoration: underline;
+}
+
+/* 使用说明卡片 */
+.usage-guide {
+  margin-top: 24px;
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-lighter) 0%,
+    white 100%
+  );
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--primary-light);
+}
+
+.usage-guide h4 {
+  margin: 0 0 16px 0;
+  color: var(--primary-color);
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usage-guide ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.usage-guide li {
+  margin-bottom: 10px;
+  padding-left: 24px;
+  position: relative;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.usage-guide li::before {
+  content: attr(data-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  background: var(--primary-gradient);
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.usage-guide li:last-child {
+  margin-bottom: 0;
+}
+
+/* 测试结果 */
+.test-result {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.test-result.success {
+  background: var(--success-light);
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
+}
+
+.test-result.error {
+  background: var(--error-light);
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+}
+
