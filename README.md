@@ -4,15 +4,15 @@
 
 <p align="center">
   <a href="./README.md"><img src="https://img.shields.io/badge/English-blue" alt="English"></a>
-  <a href="./README.zh-CN.md"><img src="https://img.shields.io/badge/中文-red" alt="中文"></a>
-  <a href="./README.zh-TW.md"><img src="https://img.shields.io/badge/中文繁体-orange" alt="中文繁体"></a>
-  <a href="./README.fr.md"><img src="https://img.shields.io/badge/Français-green" alt="Français"></a>
-  <a href="./README.ja.md"><img src="https://img.shields.io/badge/日本語-purple" alt="日本語"></a>
-  <a href="./README.ko.md"><img src="https://img.shields.io/badge/한국어-pink" alt="한국어"></a>
-  <a href="./README.ru.md"><img src="https://img.shields.io/badge/Русский-teal" alt="Русский"></a>
-  <a href="./README.es.md"><img src="https://img.shields.io/badge/Español-yellow" alt="Español"></a>
-  <a href="./README.ar.md"><img src="https://img.shields.io/badge/العربية-yellow" alt="العربية"></a>
-  <a href="./README.id.md"><img src="https://img.shields.io/badge/Bahasa_Indonesia-yellow" alt="Bahasa Indonesia"></a>
+  <a href="./assets/README.zh-CN.md"><img src="https://img.shields.io/badge/中文-red" alt="中文"></a>
+  <a href="./assets/README.zh-TW.md"><img src="https://img.shields.io/badge/中文繁体-orange" alt="中文繁体"></a>
+  <a href="./assets/README.fr.md"><img src="https://img.shields.io/badge/Français-green" alt="Français"></a>
+  <a href="./assets/README.ja.md"><img src="https://img.shields.io/badge/日本語-purple" alt="日本語"></a>
+  <a href="./assets/README.ko.md"><img src="https://img.shields.io/badge/한국어-pink" alt="한국어"></a>
+  <a href="./assets/README.ru.md"><img src="https://img.shields.io/badge/Русский-teal" alt="Русский"></a>
+  <a href="./assets/README.es.md"><img src="https://img.shields.io/badge/Español-yellow" alt="Español"></a>
+  <a href="./assets/README.ar.md"><img src="https://img.shields.io/badge/العربية-yellow" alt="العربية"></a>
+  <a href="./assets/README.id.md"><img src="https://img.shields.io/badge/Bahasa_Indonesia-yellow" alt="Bahasa Indonesia"></a>
 </p>
 
 # 🚀 Offer Laolao - Resume Auto-Fill Assistant Smart Browser Extension

@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="./assets/laolao.gif" alt="Offer Laolao Logo" width="200">
+  <img src="../assets/laolao.gif" alt="Offer Laolao Logo" width="200">
 </p>
 
 <p align="center">
-  <a href="./README.md"><img src="https://img.shields.io/badge/English-blue" alt="English"></a>
+  <a href="../README.md"><img src="https://img.shields.io/badge/English-blue" alt="English"></a>
   <a href="./README.zh-CN.md"><img src="https://img.shields.io/badge/中文-red" alt="中文"></a>
   <a href="./README.zh-TW.md"><img src="https://img.shields.io/badge/中文繁体-orange" alt="中文繁体"></a>
   <a href="./README.fr.md"><img src="https://img.shields.io/badge/Français-green" alt="Français"></a>
