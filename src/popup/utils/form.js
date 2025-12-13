@@ -1,5 +1,6 @@
 // 表单工具模块
 // 处理表单数据的收集和填充
+// 已迁移到新架构：使用 EventBus 和配置
 
 /**
  * 收集动态项目数据
@@ -35,41 +36,67 @@ function collectDynamicItems(listId) {
 
 /**
  * 收集表单数据
+ * 已迁移到新架构：使用配置和事件总线
  * @returns {object} 表单数据对象
  */
 function collectFormData() {
+    // 使用新架构的配置
+    const FieldConfig = window.OfferLaolao?.Config?.FieldConfig;
+    const Constants = window.OfferLaolao?.Config?.Constants;
+    const EventBus = window.OfferLaolao?.Core?.EventBus;
+    
+    // 使用配置中的列表ID
+    const listIds = Constants?.LIST_IDS || {
+        SKILLS: 'skills-list',
+        EDUCATION: 'education-list',
+        WORK_EXPERIENCE: 'internship-list',
+        PROJECTS: 'project-list',
+        LANGUAGES: 'language-list',
+        CUSTOM_FIELDS: 'custom-field-list'
+    };
+    
     var formData = {
-        skills: collectDynamicItems('skills-list'),
-        education: collectDynamicItems('education-list'),
-        workExperience: collectDynamicItems('internship-list'),
-        projects: collectDynamicItems('project-list'),
-        languages: collectDynamicItems('language-list'),
-        customFields: collectDynamicItems('custom-field-list'),
+        skills: collectDynamicItems(listIds.SKILLS),
+        education: collectDynamicItems(listIds.EDUCATION),
+        workExperience: collectDynamicItems(listIds.WORK_EXPERIENCE),
+        projects: collectDynamicItems(listIds.PROJECTS),
+        languages: collectDynamicItems(listIds.LANGUAGES),
+        customFields: collectDynamicItems(listIds.CUSTOM_FIELDS),
         personalInfo: {}
     };
     
+    // 使用配置中的字段列表
+    const basicFields = FieldConfig?.basic || [];
+    const jobExpectFields = FieldConfig?.jobExpectation || [];
+    
     // 收集基本信息
-    var basicInfoFields = ['name', 'gender', 'birth-date', 'phone', 'email', 'id-card', 'location', 'political-status'];
-    for (var i = 0; i < basicInfoFields.length; i++) {
-        var field = document.getElementById(basicInfoFields[i]);
+    basicFields.forEach(function(fieldConfig) {
+        var field = document.getElementById(fieldConfig.id);
         if (field) {
-            formData.personalInfo[basicInfoFields[i]] = field.value || '';
+            formData.personalInfo[fieldConfig.id] = field.value || '';
         }
-    }
+    });
     
     // 收集求职期望
-    var jobExpectFields = ['expected-position', 'expected-industry', 'expected-salary', 'expected-location', 'internship-duration', 'available-time'];
-    for (var i = 0; i < jobExpectFields.length; i++) {
-        var field = document.getElementById(jobExpectFields[i]);
-        if (field) {
-            formData.personalInfo[jobExpectFields[i]] = field.value || '';
+    jobExpectFields.forEach(function(fieldConfig) {
+        if (!fieldConfig.hidden) {
+            var field = document.getElementById(fieldConfig.id);
+            if (field) {
+                formData.personalInfo[fieldConfig.id] = field.value || '';
+            }
         }
-    }
+    });
     
     // 收集自我描述
-    var selfIntro = document.getElementById('self-intro');
+    const selfIntroId = Constants?.FIELD_IDS?.SELF_INTRO || 'self-intro';
+    var selfIntro = document.getElementById(selfIntroId);
     if (selfIntro) {
         formData.personalInfo['self-intro'] = selfIntro.value || '';
+    }
+    
+    // 触发表单数据收集事件
+    if (EventBus) {
+        EventBus.emit('form:data:collected', { formData });
     }
     
     return formData;
@@ -115,19 +142,32 @@ function fillDynamicItem(itemElement, itemData) {
 
 /**
  * 使用解析的数据填充表单
+ * 已迁移到新架构：使用 NotificationService、EventBus 和 DynamicItemFactory
  * @param {object} data - 解析后的简历数据
  */
 function fillFormWithParsedData(data) {
+    // 使用新架构的服务
+    const notification = window.OfferLaolao?.Services?.NotificationService;
+    const EventBus = window.OfferLaolao?.Core?.EventBus;
+    const DynamicItemFactory = window.OfferLaolao?.Factories?.DynamicItemFactory;
+    const Constants = window.OfferLaolao?.Config?.Constants;
+    
+    // 兼容旧代码
+    const showNotify = notification 
+        ? (msg, type) => notification.show(msg, type)
+        : (typeof showNotification === 'function' ? showNotification : () => {});
+    
     if (!data || typeof data !== 'object') {
-        if (typeof showNotification !== 'undefined') {
-            showNotification('解析数据无效', 'error');
-        }
+        showNotify('解析数据无效', 'error');
         return;
     }
     
     console.log('Filling form with parsed data:', data);
-    if (typeof showNotification !== 'undefined') {
-        showNotification('正在填充表单数据...', 'info');
+    showNotify('正在填充表单数据...', 'info');
+    
+    // 触发表单填充开始事件
+    if (EventBus) {
+        EventBus.emit('form:fill:start', { data });
     }
     
     try {
@@ -188,79 +228,117 @@ function fillFormWithParsedData(data) {
             }
         }
         
+        // 使用新架构的工厂模式创建动态项
+        const listIds = Constants?.LIST_IDS || {
+            EDUCATION: 'education-list',
+            WORK_EXPERIENCE: 'internship-list',
+            PROJECTS: 'project-list',
+            SKILLS: 'skills-list',
+            LANGUAGES: 'language-list',
+            CUSTOM_FIELDS: 'custom-field-list'
+        };
+        
+        // 创建函数映射（优先使用工厂模式）
+        const createItem = (type, index) => {
+            if (DynamicItemFactory) {
+                return DynamicItemFactory.create(type, index);
+            }
+            // 兼容旧代码
+            const funcMap = {
+                education: typeof createEducationItem === 'function' ? createEducationItem : null,
+                workExperience: typeof createWorkExperienceItem === 'function' ? createWorkExperienceItem : null,
+                project: typeof createProjectItem === 'function' ? createProjectItem : null,
+                skill: typeof createSkillItem === 'function' ? createSkillItem : null,
+                language: typeof createLanguageItem === 'function' ? createLanguageItem : null,
+                customField: typeof createCustomFieldItem === 'function' ? createCustomFieldItem : null
+            };
+            const func = funcMap[type];
+            return func ? func(index) : null;
+        };
+        
         // 填充教育经历
         if (data.education && Array.isArray(data.education) && data.education.length > 0) {
-            const educationList = document.getElementById('education-list');
-            if (educationList && typeof createEducationItem === 'function') {
+            const educationList = document.getElementById(listIds.EDUCATION);
+            if (educationList) {
                 // 清空现有项
                 while (educationList.firstChild) {
                     educationList.removeChild(educationList.firstChild);
                 }
                 // 添加解析的教育经历
                 data.education.forEach(function(eduData, index) {
-                    const eduItem = createEducationItem(index);
-                    fillDynamicItem(eduItem, eduData);
-                    educationList.appendChild(eduItem);
+                    const eduItem = createItem('education', index);
+                    if (eduItem) {
+                        fillDynamicItem(eduItem, eduData);
+                        educationList.appendChild(eduItem);
+                    }
                 });
             }
         }
         
         // 填充工作经历
         if (data.workExperience && Array.isArray(data.workExperience) && data.workExperience.length > 0) {
-            const workList = document.getElementById('internship-list');
-            if (workList && typeof createWorkExperienceItem === 'function') {
+            const workList = document.getElementById(listIds.WORK_EXPERIENCE);
+            if (workList) {
                 while (workList.firstChild) {
                     workList.removeChild(workList.firstChild);
                 }
                 data.workExperience.forEach(function(workData, index) {
-                    const workItem = createWorkExperienceItem(index);
-                    fillDynamicItem(workItem, workData);
-                    workList.appendChild(workItem);
+                    const workItem = createItem('workExperience', index);
+                    if (workItem) {
+                        fillDynamicItem(workItem, workData);
+                        workList.appendChild(workItem);
+                    }
                 });
             }
         }
         
         // 填充项目经历
         if (data.projects && Array.isArray(data.projects) && data.projects.length > 0) {
-            const projectList = document.getElementById('project-list');
-            if (projectList && typeof createProjectItem === 'function') {
+            const projectList = document.getElementById(listIds.PROJECTS);
+            if (projectList) {
                 while (projectList.firstChild) {
                     projectList.removeChild(projectList.firstChild);
                 }
                 data.projects.forEach(function(projectData, index) {
-                    const projectItem = createProjectItem(index);
-                    fillDynamicItem(projectItem, projectData);
-                    projectList.appendChild(projectItem);
+                    const projectItem = createItem('project', index);
+                    if (projectItem) {
+                        fillDynamicItem(projectItem, projectData);
+                        projectList.appendChild(projectItem);
+                    }
                 });
             }
         }
         
         // 填充技能
         if (data.skills && Array.isArray(data.skills) && data.skills.length > 0) {
-            const skillsList = document.getElementById('skills-list');
-            if (skillsList && typeof createSkillItem === 'function') {
+            const skillsList = document.getElementById(listIds.SKILLS);
+            if (skillsList) {
                 while (skillsList.firstChild) {
                     skillsList.removeChild(skillsList.firstChild);
                 }
                 data.skills.forEach(function(skillData, index) {
-                    const skillItem = createSkillItem(index);
-                    fillDynamicItem(skillItem, skillData);
-                    skillsList.appendChild(skillItem);
+                    const skillItem = createItem('skill', index);
+                    if (skillItem) {
+                        fillDynamicItem(skillItem, skillData);
+                        skillsList.appendChild(skillItem);
+                    }
                 });
             }
         }
         
         // 填充语言能力
         if (data.languages && Array.isArray(data.languages) && data.languages.length > 0) {
-            const languageList = document.getElementById('language-list');
-            if (languageList && typeof createLanguageItem === 'function') {
+            const languageList = document.getElementById(listIds.LANGUAGES);
+            if (languageList) {
                 while (languageList.firstChild) {
                     languageList.removeChild(languageList.firstChild);
                 }
                 data.languages.forEach(function(langData, index) {
-                    const langItem = createLanguageItem(index);
-                    fillDynamicItem(langItem, langData);
-                    languageList.appendChild(langItem);
+                    const langItem = createItem('language', index);
+                    if (langItem) {
+                        fillDynamicItem(langItem, langData);
+                        languageList.appendChild(langItem);
+                    }
                 });
             }
         }
@@ -270,14 +348,20 @@ function fillFormWithParsedData(data) {
             autoSaveFormData();
         }
         
-        if (typeof showNotification !== 'undefined') {
-            showNotification('表单数据填充成功！', 'success');
+        showNotify('表单数据填充成功！', 'success');
+        
+        // 触发表单填充完成事件
+        if (EventBus) {
+            EventBus.emit('form:fill:completed', { data });
         }
         
     } catch (error) {
         console.error('Error filling form:', error);
-        if (typeof showNotification !== 'undefined') {
-            showNotification('填充表单时发生错误：' + error.message, 'error');
+        showNotify('填充表单时发生错误：' + error.message, 'error');
+        
+        // 触发表单填充错误事件
+        if (EventBus) {
+            EventBus.emit('form:fill:error', { error });
         }
     }
 }

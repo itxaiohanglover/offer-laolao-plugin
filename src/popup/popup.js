@@ -130,10 +130,26 @@ function cleanupAllSingleItemSections() {
 
 /**
  * 加载设置
+ * 已迁移到新架构：使用 StorageService
  */
 function loadSettings() {
+    // 使用新架构的存储服务
+    const storage = window.OfferLaolao?.Services?.StorageService;
+    const Constants = window.OfferLaolao?.Config?.Constants;
+    
+    // 兼容旧代码
+    const loadData = storage 
+        ? (key) => storage.loadSync(key, {})
+        : (typeof loadDataFromStorage === 'function' ? loadDataFromStorage : () => ({}));
+    const saveData = storage 
+        ? (data, key) => storage.saveSync(key, data)
+        : (typeof saveDataToStorage === 'function' ? saveDataToStorage : () => false);
+    
+    const modelSettingsKey = Constants?.STORAGE_KEYS?.MODEL_SETTINGS || 'modelSettings';
+    const parseSettingsKey = Constants?.STORAGE_KEYS?.PARSE_SETTINGS || 'parseSettings';
+    
     // 加载模型配置
-    var modelSettings = loadDataFromStorage('modelSettings');
+    var modelSettings = loadData(modelSettingsKey);
     if (modelSettings && typeof modelSettings === 'object') {
         if (document.getElementById('model-api-url')) {
             document.getElementById('model-api-url').value = modelSettings.url || '';
@@ -147,7 +163,7 @@ function loadSettings() {
     }
     
     // 加载简历解析配置
-    var parseSettings = loadDataFromStorage('parseSettings');
+    var parseSettings = loadData(parseSettingsKey);
     if (parseSettings && typeof parseSettings === 'object') {
         if (document.getElementById('parse-api-url')) {
             document.getElementById('parse-api-url').value = parseSettings.url || '';
@@ -158,7 +174,8 @@ function loadSettings() {
     }
     
     // 兼容旧版本配置（如果存在）
-    var oldSettings = loadDataFromStorage('appSettings');
+    const appSettingsKey = Constants?.STORAGE_KEYS?.APP_SETTINGS || 'appSettings';
+    var oldSettings = loadData(appSettingsKey);
     if (oldSettings && typeof oldSettings === 'object' && oldSettings.url) {
         // 如果有旧配置，迁移到新的配置结构
         if (!modelSettings || !modelSettings.url) {
@@ -168,7 +185,7 @@ function loadSettings() {
                 apiKey: oldSettings.apiKey || '',
                 model: oldSettings.model || ''
             };
-            saveDataToStorage(migratedModelSettings, 'modelSettings');
+            saveData(migratedModelSettings, modelSettingsKey);
             if (document.getElementById('model-api-url')) {
                 document.getElementById('model-api-url').value = migratedModelSettings.url;
             }
@@ -186,7 +203,7 @@ function loadSettings() {
                 url: oldSettings.url || '',
                 appCode: oldSettings.apiKey || ''
             };
-            saveDataToStorage(migratedParseSettings, 'parseSettings');
+            saveData(migratedParseSettings, parseSettingsKey);
             if (document.getElementById('parse-api-url')) {
                 document.getElementById('parse-api-url').value = migratedParseSettings.url;
             }
@@ -294,7 +311,14 @@ function initApp() {
         safeExecute(function() {
             console.log('Step 9: Final cleanup check');
             // 检查是否有保存的数据
-            var resumeData = safeExecute(loadDataFromStorage, null, ['resumeData'], {});
+            // 使用新架构的存储服务
+            const storage = window.OfferLaolao?.Services?.StorageService;
+            const Constants = window.OfferLaolao?.Config?.Constants;
+            const loadData = storage 
+                ? (key) => storage.loadSync(key, {})
+                : (typeof loadDataFromStorage === 'function' ? loadDataFromStorage : () => ({}));
+            const storageKey = Constants?.STORAGE_KEYS?.RESUME_DATA || 'resumeData';
+            var resumeData = safeExecute(loadData, null, [storageKey], {});
             // 只有在没有保存数据时才清理多余的空项
             if (!resumeData || typeof resumeData !== 'object' || Object.keys(resumeData).length === 0) {
                 setTimeout(function() {

@@ -1,5 +1,6 @@
 // 简历上传组件模块
 // 处理简历文件的上传和解析
+// 已迁移到新架构：使用 StorageService、NotificationService
 
 /**
  * 初始化简历上传功能
@@ -7,6 +8,19 @@
 function initResumeUpload() {
     safeExecute(function() {
         console.log('Initializing resume upload functionality');
+        
+        // 使用新架构的服务
+        const storage = window.OfferLaolao?.Services?.StorageService;
+        const notification = window.OfferLaolao?.Services?.NotificationService;
+        const Constants = window.OfferLaolao?.Config?.Constants;
+        
+        // 兼容旧代码
+        const showNotify = notification 
+            ? (msg, type) => notification.show(msg, type)
+            : (typeof showNotification === 'function' ? showNotification : () => {});
+        const loadData = storage 
+            ? (key) => storage.loadSync(key, {})
+            : (typeof loadDataFromStorage === 'function' ? loadDataFromStorage : () => ({}));
         
         const dropArea = document.getElementById('drop-area');
         const fileInput = document.getElementById('file-input');
@@ -78,7 +92,7 @@ function initResumeUpload() {
                 const fileExtension = file.name.toLowerCase().substr(file.name.lastIndexOf('.'));
                 
                 if (allowedExtensions.includes(fileExtension)) {
-                    showNotification('正在解析简历文件，请稍候...', 'info');
+                    showNotify('正在解析简历文件，请稍候...', 'info');
                     
                     // 如果是JSON文件，直接解析
                     if (fileExtension === '.json' || file.type === 'application/json') {
@@ -104,10 +118,10 @@ function initResumeUpload() {
                                     }
                                 }
                                 
-                                showNotification('JSON文件解析成功！点击"使用解析数据"按钮填充表单', 'success');
+                                showNotify('JSON文件解析成功！点击"使用解析数据"按钮填充表单', 'success');
                             } catch (error) {
                                 console.error('JSON parse error:', error);
-                                showNotification('JSON文件解析失败，请检查文件格式', 'error');
+                                showNotify('JSON文件解析失败，请检查文件格式', 'error');
                                 if (parseResultDiv) {
                                     parseResultDiv.innerHTML = '<p style="color: red;">JSON文件解析失败：' + error.message + '</p>';
                                 }
@@ -116,7 +130,7 @@ function initResumeUpload() {
                         reader.readAsText(file);
                     } else {
                         // 其他格式的文件（PDF、DOCX等），调用API解析
-                        showNotification('文件已上传，正在调用API解析...', 'info');
+                        showNotify('文件已上传，正在调用API解析...', 'info');
                         
                         // 获取简历解析API配置
                         // 使用安全的函数调用，如果函数不存在则使用备用方法
@@ -129,19 +143,16 @@ function initResumeUpload() {
                             } else {
                                 // 如果函数不存在，尝试直接从存储中读取
                                 console.warn('getParseAPIConfig not found, trying to load from storage directly');
-                                if (typeof loadDataFromStorage === 'function') {
-                                    var parseSettings = loadDataFromStorage('parseSettings');
-                                    apiConfig = {
-                                        url: parseSettings.url || '',
-                                        appCode: parseSettings.appCode || ''
-                                    };
-                                } else {
-                                    throw new Error('getParseAPIConfig and loadDataFromStorage functions not found');
-                                }
+                                const parseSettingsKey = Constants?.STORAGE_KEYS?.PARSE_SETTINGS || 'parseSettings';
+                                var parseSettings = loadData(parseSettingsKey);
+                                apiConfig = {
+                                    url: parseSettings.url || '',
+                                    appCode: parseSettings.appCode || ''
+                                };
                             }
                         } catch (error) {
                             console.error('Error getting API config:', error);
-                            showNotification('获取API配置失败: ' + error.message, 'error');
+                            showNotify('获取API配置失败: ' + error.message, 'error');
                             if (parseResultDiv) {
                                 parseResultDiv.innerHTML = 
                                     '<div style="padding: 15px; background: #fff1f0; border: 1px solid #ff4d4f; border-radius: 4px;">' +
@@ -153,7 +164,7 @@ function initResumeUpload() {
                         }
                         
                         if (!apiConfig.url || !apiConfig.appCode) {
-                            showNotification('请先在设置中配置简历解析API URL和APP Code', 'error');
+                            showNotify('请先在设置中配置简历解析API URL和APP Code', 'error');
                             if (parseResultDiv) {
                                 parseResultDiv.innerHTML = 
                                     '<div style="padding: 15px; background: #fff7e6; border: 1px solid #ff9800; border-radius: 4px;">' +
@@ -212,7 +223,7 @@ function initResumeUpload() {
                                         console.error('Available functions:', Object.keys(window).filter(function(k) {
                                             return k.includes('parse') || k.includes('API') || k.includes('Resume');
                                         }));
-                                        showNotification('API解析函数未加载，请刷新扩展后重试', 'error');
+                                        showNotify('API解析函数未加载，请刷新扩展后重试', 'error');
                                         if (parseResultDiv) {
                                             parseResultDiv.innerHTML = 
                                                 '<div style="padding: 15px; background: #fff1f0; border: 1px solid #ff4d4f; border-radius: 4px;">' +
@@ -265,7 +276,7 @@ function initResumeUpload() {
                                     }
                                 }
                                 
-                                showNotification('文件解析成功！点击"使用解析数据"按钮填充表单', 'success');
+                                showNotify('文件解析成功！点击"使用解析数据"按钮填充表单', 'success');
                             }, 300);
                         }
                         
@@ -283,14 +294,14 @@ function initResumeUpload() {
                                     '</div>';
                             }
                             
-                            showNotification('文件解析失败: ' + (error.message || '未知错误'), 'error');
+                            showNotify('文件解析失败: ' + (error.message || '未知错误'), 'error');
                         }
                         
                         // 开始尝试解析
                         tryParseResume();
                     }
                 } else {
-                    showNotification('不支持的文件格式，请上传PDF、Word、JSON或文本文档。', 'error');
+                    showNotify('不支持的文件格式，请上传PDF、Word、JSON或文本文档。', 'error');
                     if (parseResultDiv) {
                         parseResultDiv.innerHTML = '<p style="color: red;">不支持的文件格式</p>';
                     }
