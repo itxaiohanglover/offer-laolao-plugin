@@ -83,11 +83,13 @@ const featureList = [
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 80px;
+  margin-bottom: 10px;
   padding: 100px 24px 60px; /* 增加左右内边距防止窄屏贴边 */
   background: #ffffff;
   position: relative;
   /* 移除边框，改用更通透的背景 */
+  /* CSS 层面的滚动偏移保障，避免被导航栏遮挡 */
+  scroll-margin-top: 100px;
 }
 
 /* 装饰背景光（可选，增加氛围感） */
@@ -226,7 +228,7 @@ const featureList = [
 
 /* Emoji 图标容器美化 */
 .feature-emoji {
-  font-size: 24px;
+  font-size: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -236,15 +238,21 @@ const featureList = [
   /* 渐变背景 */
   background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(24, 144, 255, 0.15);
   
   /* 阴影让图标浮起来 */
   box-shadow: 0 4px 12px rgba(24, 144, 255, 0.12);
   transition: transform 0.4s ease;
 
-  /* === 修复图标消失的关键代码 === */
+  /* === 修复图标显示的关键代码 === */
+  color: initial;
   -webkit-text-fill-color: initial;
-  background-clip: border-box;
+  background-clip: padding-box;
+  /* 确保 emoji 不被背景覆盖 */
+  position: relative;
+  z-index: 1;
+  /* 确保 emoji 文本正常显示 */
+  line-height: 1;
 }
 
 .feature-card:hover .feature-emoji {
@@ -334,10 +342,26 @@ const featureList = [
 
 /* 连接线 */
 .connection-line-vertical.short {
-  height: 40px; 
-  margin-top: 40px; 
+  height: 70px; 
+  margin-top: 30px; 
+
   width: 2px;
-  background: linear-gradient(to bottom, rgba(24, 144, 255, 0.2), transparent);
+  background: linear-gradient(to bottom, rgba(24, 144, 255, 0.3), rgba(54, 207, 201, 0.2), rgba(114, 46, 209, 0.1), transparent);
+  position: relative;
+}
+
+.connection-line-vertical.short::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1890ff, #36cfc9);
+  box-shadow: 0 0 20px rgba(24, 144, 255, 0.4), 0 0 10px rgba(54, 207, 201, 0.3);
+  border: 4px solid rgba(255, 255, 255, 0.9);
 }
 
 /* =========================================

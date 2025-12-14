@@ -1,5 +1,5 @@
 {
-  "name": "resume-auto-fill-assistant",
+  "name": "offer-laolao-plugin",
   "private": true,
   "version": "2.0.0",
   "description": "简历自动填写助手 - AI驱动的智能简历助手，支持多款国产大模型",
@@ -16,6 +16,8 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.3",
+    "typescript": "^5.2.2",
+    "vue-tsc": "^1.8.27",
     "vite": "^5.0.11"
   }
 }

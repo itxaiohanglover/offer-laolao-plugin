@@ -69,6 +69,8 @@ const versions = [
   position: relative;
   /* 移除overflow: hidden，避免节点图标被裁剪 */
   /* overflow: hidden; */
+  /* CSS 层面的滚动偏移保障，避免被导航栏遮挡 */
+  scroll-margin-top: 100px;
 }
 
 /* 节点图标 - 作为section分界标识 - 蓝色边框 */

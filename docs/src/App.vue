@@ -26,12 +26,12 @@ const handleNavClick = (targetSelector) => {
     }
     
     // 计算滚动位置，考虑导航栏高度
-    const navHeight = 80 // 导航栏高度
+    const navHeight = 85 // 导航栏高度 + 额外间距
     const targetPosition = target.offsetTop - navHeight
     
     // 使用window.scrollTo而不是scrollIntoView，精确控制滚动位置
     window.scrollTo({
-      top: targetPosition,
+      top: Math.max(0, targetPosition), // 确保不会滚动到负值
       behavior: 'smooth'
     })
   }
@@ -152,12 +152,7 @@ onUnmounted(() => {
 
     <footer class="footer-section">
       <div class="footer-content">
-        <p>© 2025 简历自动填写助手 Offer捞捞</p>
-        <div class="footer-links">
-          <a href="#">隐私协议</a>
-          <a href="#">使用文档</a>
-          <a href="#">GitHub</a>
-        </div>
+        <p>© 2025 简历自动填写助手 offer捞捞</p>
       </div>
     </footer>
   </div>
@@ -177,6 +172,9 @@ onUnmounted(() => {
   box-sizing: border-box;
   /* 禁止内部滚动，只允许body滚动 */
   overflow: hidden;
+  /* 使用flex布局确保footer置底 */
+  display: flex;
+  flex-direction: column;
   /* 使用min-height确保容器至少占满视口高度，但不限制内容高度 */
   min-height: 100vh;
   height: auto;
@@ -243,6 +241,8 @@ onUnmounted(() => {
   padding-left: 20px;
   padding-right: 20px;
   height: auto;
+  /* 使用flex-grow确保内容区域可以扩展，footer自动置底 */
+  flex: 1 0 auto;
 }
 
 /* 页脚样式 - 只修改边框和文字特效 */
@@ -258,6 +258,9 @@ onUnmounted(() => {
   z-index: 1;
   /* 添加底部阴影 */
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+  /* 确保footer不会收缩，始终在底部 */
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .footer-content {
@@ -265,32 +268,6 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
-.footer-links {
-  margin-top: 16px;
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-}
-
-.footer-links a {
-  color: #666;
-  text-decoration: none;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  padding: 8px 16px;
-  border-radius: 20px;
-}
-
-.footer-links a:hover {
-  /* 渐变文字效果 */
-  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* 添加背景色 */
-  background-color: rgba(24, 144, 255, 0.1);
-  transform: translateY(-2px);
-}
 </style>
 
 <style>

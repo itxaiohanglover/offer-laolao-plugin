@@ -34,22 +34,61 @@ const currentActiveId = ref(props.defaultActive)
 
 let lastScrollTop = 0
 let ticking = false
+let scrollTimeout = null
 
-// 3. 点击跳转 (带偏移量)
+// 3. 点击跳转 (带偏移量) - 修复版本
 const handleNavClick = (item) => {
   // 点击时立即手动设置为激活状态，提升响应速度
   currentActiveId.value = item.id
   
-  const element = document.querySelector(item.target)
-  if (element) {
-    const elementPosition = element.getBoundingClientRect().top
-    const offsetPosition = elementPosition + window.pageYOffset - 85 // 85px 偏移，留出一点呼吸感
-    
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: 'smooth'
-    })
+  // 取消之前的滚动动画
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout)
   }
+  
+  // 立即停止当前滚动
+  window.scrollTo({
+    top: window.pageYOffset,
+    behavior: 'auto'
+  })
+  
+  // 特殊处理：首页直接滚动到顶部
+  if (item.id === 'home' || item.target === '.header-section') {
+    // 使用 requestAnimationFrame 确保 DOM 更新后再滚动
+    requestAnimationFrame(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      })
+    })
+    return
+  }
+  
+  // 使用 requestAnimationFrame 确保 DOM 完全渲染后再计算位置
+  requestAnimationFrame(() => {
+    const element = document.querySelector(item.target)
+    if (element) {
+      // 使用 offsetTop 而不是 getBoundingClientRect，因为它更稳定
+      // offsetTop 是相对于 offsetParent 的距离，不受滚动影响
+      const navHeight = 85 // 导航栏高度 + 额外间距
+      let targetPosition = 0
+      
+      // 计算元素相对于文档顶部的绝对位置
+      let currentElement = element
+      while (currentElement) {
+        targetPosition += currentElement.offsetTop
+        currentElement = currentElement.offsetParent
+      }
+      
+      // 减去导航栏高度
+      const finalPosition = Math.max(0, targetPosition - navHeight)
+      
+      window.scrollTo({
+        top: finalPosition,
+        behavior: 'smooth'
+      })
+    }
+  })
 }
 
 const handleScrollToTop = () => {
