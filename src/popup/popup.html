@@ -77,6 +77,7 @@
            ============================================ -->
       <div class="action-buttons">
         <button id="fill-current-page" class="btn-primary">📋 预填</button>
+        <button id="scroll-prefill" class="btn-scroll-prefill" title="滚动时自动检测并填充表单">🎯 滚动预填</button>
         <button id="optimize-resume" class="btn-ai">✨ AI优化</button>
         <button id="save-resume" class="btn-secondary">💾 保存</button>
         <button id="reset-resume" class="btn-danger">🗑️ 重置</button>
@@ -404,12 +405,6 @@
                 name="language[0][certificate]"
                 placeholder="请输入证书名称（如：大学英语六级）"
               />
-              <input
-                type="file"
-                name="language[0][certificate-file]"
-                accept=".pdf,.jpg,.png"
-                style="margin-top: 8px"
-              />
             </div>
           </div>
         </div>
@@ -627,7 +622,7 @@
          JavaScript 文件引入
          按模块顺序加载，确保依赖关系正确
          ============================================ -->
-    
+
     <!-- ============================================
          新架构：核心模块（必须最先加载）
          ============================================ -->
@@ -639,7 +634,7 @@
     <script src="services/StorageService.js"></script>
     <script src="services/NotificationService.js"></script>
     <script src="factories/DynamicItemFactory.js"></script>
-    
+
     <!-- ============================================
          旧代码：工具模块（保持兼容）
          ============================================ -->
@@ -678,5 +673,3 @@
     <script src="popup.js"></script>
   </body>
 </html>
-
-

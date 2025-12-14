@@ -2328,6 +2328,712 @@ function getElementXPath(element) {
 }
 
 // ==========================================
+// 滚动检测预填功能
+// ==========================================
+
+// 滚动预填模式状态
+let scrollPrefillEnabled = false;
+let scrollPrefillUI = null;
+let cachedResumeData = null;
+let lastVisibleFields = [];
+let scrollDebounceTimer = null;
+let aiMatchingInProgress = false;
+let currentMatchResults = [];
+
+/**
+ * 启用滚动预填模式
+ */
+function enableScrollPrefill(resumeData) {
+  if (scrollPrefillEnabled) {
+    console.log("滚动预填模式已启用");
+    return;
+  }
+
+  scrollPrefillEnabled = true;
+  cachedResumeData = resumeData;
+
+  // 创建预填UI
+  createScrollPrefillUI();
+
+  // 添加滚动事件监听
+  window.addEventListener("scroll", handleScrollForPrefill, { passive: true });
+  window.addEventListener("wheel", handleWheelForPrefill, { passive: true });
+
+  // 初始检测
+  detectVisibleFieldsAndMatch();
+
+  console.log("滚动预填模式已启用");
+  showScrollPrefillToast("🔍 智能预填已启动，滚动页面自动检测表单");
+}
+
+/**
+ * 禁用滚动预填模式
+ */
+function disableScrollPrefill() {
+  scrollPrefillEnabled = false;
+  cachedResumeData = null;
+  lastVisibleFields = [];
+  currentMatchResults = [];
+
+  // 移除事件监听
+  window.removeEventListener("scroll", handleScrollForPrefill);
+  window.removeEventListener("wheel", handleWheelForPrefill);
+
+  // 移除UI
+  removeScrollPrefillUI();
+
+  console.log("滚动预填模式已禁用");
+}
+
+/**
+ * 处理滚动事件（带防抖）
+ */
+function handleScrollForPrefill() {
+  if (!scrollPrefillEnabled) return;
+
+  clearTimeout(scrollDebounceTimer);
+  scrollDebounceTimer = setTimeout(() => {
+    detectVisibleFieldsAndMatch();
+  }, 300);
+}
+
+/**
+ * 处理滚轮事件
+ */
+function handleWheelForPrefill(event) {
+  if (!scrollPrefillEnabled) return;
+
+  // 滚轮事件也触发检测（防抖处理）
+  clearTimeout(scrollDebounceTimer);
+  scrollDebounceTimer = setTimeout(() => {
+    detectVisibleFieldsAndMatch();
+  }, 300);
+}
+
+/**
+ * 检测可见区域内的表单元素并进行AI匹配
+ */
+async function detectVisibleFieldsAndMatch() {
+  if (!scrollPrefillEnabled || !cachedResumeData) return;
+  if (aiMatchingInProgress) return;
+
+  // 获取可见区域内的表单字段
+  const visibleFields = getVisibleFormFields();
+
+  if (visibleFields.length === 0) {
+    updatePrefillUI([], "当前视图内没有检测到表单字段");
+    return;
+  }
+
+  // 检查是否有新字段需要匹配
+  const newFields = visibleFields.filter(
+    (vf) => !lastVisibleFields.some((lf) => lf.element === vf.element)
+  );
+
+  if (newFields.length === 0 && currentMatchResults.length > 0) {
+    // 没有新字段，保持当前匹配结果
+    return;
+  }
+
+  lastVisibleFields = visibleFields;
+
+  // 显示匹配中状态
+  updatePrefillUI([], `正在分析 ${visibleFields.length} 个表单字段...`);
+
+  // 调用AI匹配
+  aiMatchingInProgress = true;
+  try {
+    const matchResults = await performAIFieldMatch(
+      visibleFields,
+      cachedResumeData
+    );
+    currentMatchResults = matchResults;
+    updatePrefillUI(matchResults, null);
+  } catch (error) {
+    console.error("AI匹配失败:", error);
+    updatePrefillUI([], `匹配失败: ${error.message}`);
+  } finally {
+    aiMatchingInProgress = false;
+  }
+}
+
+/**
+ * 获取当前可见区域内的表单字段
+ */
+function getVisibleFormFields() {
+  const allFields = extractPageFields();
+  const viewportHeight = window.innerHeight;
+  const viewportTop = window.scrollY;
+  const viewportBottom = viewportTop + viewportHeight;
+
+  // 筛选可见区域内的字段（带一定的缓冲区）
+  const buffer = 100; // 缓冲区像素
+  const visibleFields = allFields.filter((field) => {
+    if (!field.element) return false;
+
+    const rect = field.element.getBoundingClientRect();
+    const elementTop = rect.top + window.scrollY;
+    const elementBottom = elementTop + rect.height;
+
+    // 元素在可见区域内（包含缓冲区）
+    return (
+      elementBottom >= viewportTop - buffer &&
+      elementTop <= viewportBottom + buffer
+    );
+  });
+
+  console.log(
+    `检测到 ${visibleFields.length}/${allFields.length} 个可见表单字段`
+  );
+  return visibleFields;
+}
+
+/**
+ * 执行AI字段匹配
+ */
+async function performAIFieldMatch(pageFields, resumeData) {
+  // 将简历数据扁平化
+  const resumeFields = flattenResumeData(resumeData);
+
+  if (resumeFields.length === 0) {
+    return [];
+  }
+
+  // 准备发送给AI的字段信息
+  const pageFieldsForAI = pageFields.map((f, i) => ({
+    index: i,
+    label: f.label || "",
+    placeholder: f.placeholder || "",
+    name: f.name || "",
+    id: f.id || "",
+    type: f.type || "text",
+    ariaLabel: f.ariaLabel || "",
+  }));
+
+  const resumeFieldsForAI = resumeFields.map((f, i) => ({
+    index: i,
+    key: f.key,
+    value: String(f.value).substring(0, 100),
+    type: f.type,
+    keywords: f.keywords.slice(0, 5),
+  }));
+
+  // 请求AI匹配
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage(
+      {
+        action: "aiMatchFieldsRequest",
+        pageFields: pageFieldsForAI,
+        resumeFields: resumeFieldsForAI,
+      },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          console.error("AI匹配请求失败:", chrome.runtime.lastError);
+          // 降级到本地匹配
+          const localMappings = matchFields(pageFields, resumeFields);
+          resolve(
+            localMappings.map((m) => ({
+              pageField: m.pageField,
+              resumeField: m.resumeField,
+              confidence: m.score,
+            }))
+          );
+          return;
+        }
+
+        if (response && response.success && response.mappings) {
+          // 将AI匹配结果转换为可用格式
+          const matchResults = response.mappings
+            .filter((m) => m.pageIndex >= 0 && m.resumeIndex >= 0)
+            .map((m) => ({
+              pageField: pageFields[m.pageIndex],
+              resumeField: resumeFields[m.resumeIndex],
+              confidence: m.confidence || 0.8,
+            }))
+            .filter((m) => m.pageField && m.resumeField);
+
+          resolve(matchResults);
+        } else {
+          // 降级到本地匹配
+          const localMappings = matchFields(pageFields, resumeFields);
+          resolve(
+            localMappings.map((m) => ({
+              pageField: m.pageField,
+              resumeField: m.resumeField,
+              confidence: m.score,
+            }))
+          );
+        }
+      }
+    );
+  });
+}
+
+/**
+ * 创建滚动预填UI
+ */
+function createScrollPrefillUI() {
+  if (scrollPrefillUI) return;
+
+  scrollPrefillUI = document.createElement("div");
+  scrollPrefillUI.id = "offer-laolao-scroll-prefill";
+  scrollPrefillUI.innerHTML = `
+    <style>
+      #offer-laolao-scroll-prefill {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 360px;
+        max-height: 450px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        z-index: 999998;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      
+      #offer-laolao-scroll-prefill.minimized {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      
+      #offer-laolao-scroll-prefill.minimized .prefill-content {
+        display: none;
+      }
+      
+      #offer-laolao-scroll-prefill.minimized .prefill-mini-icon {
+        display: flex;
+      }
+      
+      .prefill-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 14px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .prefill-header h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      .prefill-header-actions {
+        display: flex;
+        gap: 8px;
+      }
+      
+      .prefill-header-actions button {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+      
+      .prefill-header-actions button:hover {
+        background: rgba(255,255,255,0.3);
+      }
+      
+      .prefill-content {
+        max-height: 350px;
+        overflow-y: auto;
+      }
+      
+      .prefill-status {
+        padding: 12px 16px;
+        background: #f8f9fa;
+        color: #666;
+        font-size: 13px;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+      }
+      
+      .prefill-list {
+        padding: 8px;
+      }
+      
+      .prefill-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+      }
+      
+      .prefill-item:hover {
+        background: #e6f7ff;
+        border-color: #91d5ff;
+      }
+      
+      .prefill-item.filled {
+        background: #f6ffed;
+        border-color: #b7eb8f;
+      }
+      
+      .prefill-item-info {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .prefill-item-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 2px;
+      }
+      
+      .prefill-item-value {
+        font-size: 12px;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .prefill-item-confidence {
+        font-size: 11px;
+        color: #999;
+        margin-left: 8px;
+      }
+      
+      .prefill-item-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: transform 0.2s;
+      }
+      
+      .prefill-item-btn:hover {
+        transform: scale(1.05);
+      }
+      
+      .prefill-item-btn.filled {
+        background: #52c41a;
+      }
+      
+      .prefill-footer {
+        padding: 12px 16px;
+        background: #f8f9fa;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 10px;
+      }
+      
+      .prefill-footer button {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+      }
+      
+      .btn-fill-all {
+        background: linear-gradient(135deg, #52c41a, #389e0d);
+        color: white;
+      }
+      
+      .btn-fill-all:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(82, 196, 26, 0.4);
+      }
+      
+      .btn-close-prefill {
+        background: #f0f0f0;
+        color: #666;
+      }
+      
+      .btn-close-prefill:hover {
+        background: #e0e0e0;
+      }
+      
+      .prefill-mini-icon {
+        display: none;
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+        font-size: 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      
+      .prefill-empty {
+        padding: 30px 20px;
+        text-align: center;
+        color: #999;
+      }
+      
+      .prefill-empty-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+    </style>
+    
+    <div class="prefill-header">
+      <h4>🎯 智能预填</h4>
+      <div class="prefill-header-actions">
+        <button id="prefill-minimize" title="最小化">−</button>
+        <button id="prefill-close" title="关闭">×</button>
+      </div>
+    </div>
+    
+    <div class="prefill-content">
+      <div class="prefill-status" id="prefill-status">
+        正在检测表单字段...
+      </div>
+      <div class="prefill-list" id="prefill-list">
+      </div>
+    </div>
+    
+    <div class="prefill-footer">
+      <button class="btn-fill-all" id="prefill-fill-all">✨ 一键填充全部</button>
+      <button class="btn-close-prefill" id="prefill-stop">关闭预填</button>
+    </div>
+    
+    <div class="prefill-mini-icon">🎯</div>
+  `;
+
+  document.body.appendChild(scrollPrefillUI);
+
+  // 绑定事件
+  document.getElementById("prefill-minimize").addEventListener("click", () => {
+    scrollPrefillUI.classList.toggle("minimized");
+  });
+
+  scrollPrefillUI.addEventListener("click", (e) => {
+    if (
+      scrollPrefillUI.classList.contains("minimized") &&
+      !e.target.closest("button")
+    ) {
+      scrollPrefillUI.classList.remove("minimized");
+    }
+  });
+
+  document.getElementById("prefill-close").addEventListener("click", () => {
+    scrollPrefillUI.classList.add("minimized");
+  });
+
+  document.getElementById("prefill-fill-all").addEventListener("click", () => {
+    fillAllMatchedFields();
+  });
+
+  document.getElementById("prefill-stop").addEventListener("click", () => {
+    disableScrollPrefill();
+  });
+}
+
+/**
+ * 更新预填UI
+ */
+function updatePrefillUI(matchResults, statusMessage) {
+  if (!scrollPrefillUI) return;
+
+  const statusEl = document.getElementById("prefill-status");
+  const listEl = document.getElementById("prefill-list");
+
+  if (statusMessage) {
+    statusEl.textContent = statusMessage;
+    statusEl.style.display = "block";
+  } else if (matchResults.length > 0) {
+    statusEl.textContent = `检测到 ${matchResults.length} 个可填充字段`;
+    statusEl.style.display = "block";
+  } else {
+    statusEl.style.display = "none";
+  }
+
+  // 清空列表
+  listEl.innerHTML = "";
+
+  if (matchResults.length === 0 && !statusMessage) {
+    listEl.innerHTML = `
+      <div class="prefill-empty">
+        <div class="prefill-empty-icon">📋</div>
+        <div>滚动页面以检测更多表单字段</div>
+      </div>
+    `;
+    return;
+  }
+
+  // 渲染匹配结果
+  matchResults.forEach((match, index) => {
+    const { pageField, resumeField, confidence } = match;
+    const isFilled = pageField.element && pageField.element.value === resumeField.value;
+
+    const item = document.createElement("div");
+    item.className = `prefill-item ${isFilled ? "filled" : ""}`;
+    item.innerHTML = `
+      <div class="prefill-item-info">
+        <div class="prefill-item-label">${escapeHtml(
+          pageField.label || pageField.placeholder || pageField.name || "未知字段"
+        )}</div>
+        <div class="prefill-item-value">${escapeHtml(
+          String(resumeField.value).substring(0, 40)
+        )}${resumeField.value.length > 40 ? "..." : ""}</div>
+      </div>
+      <span class="prefill-item-confidence">${Math.round(
+        confidence * 100
+      )}%</span>
+      <button class="prefill-item-btn ${isFilled ? "filled" : ""}" data-index="${index}">
+        ${isFilled ? "✓ 已填" : "填充"}
+      </button>
+    `;
+
+    // 点击填充按钮
+    item.querySelector(".prefill-item-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const success = fillElement(pageField.element, resumeField.value);
+      if (success) {
+        item.classList.add("filled");
+        item.querySelector(".prefill-item-btn").textContent = "✓ 已填";
+        item.querySelector(".prefill-item-btn").classList.add("filled");
+        highlightFilledField(pageField.element);
+      }
+    });
+
+    // 点击整行定位到字段
+    item.addEventListener("click", () => {
+      if (pageField.element) {
+        pageField.element.scrollIntoView({ behavior: "smooth", block: "center" });
+        pageField.element.focus();
+        pageField.element.style.outline = "3px solid #667eea";
+        setTimeout(() => {
+          pageField.element.style.outline = "";
+        }, 2000);
+      }
+    });
+
+    listEl.appendChild(item);
+  });
+}
+
+/**
+ * 填充所有匹配的字段
+ */
+function fillAllMatchedFields() {
+  let filledCount = 0;
+
+  currentMatchResults.forEach((match) => {
+    const { pageField, resumeField } = match;
+    if (pageField.element && resumeField.value) {
+      const success = fillElement(pageField.element, resumeField.value);
+      if (success) {
+        filledCount++;
+        highlightFilledField(pageField.element);
+      }
+    }
+  });
+
+  showScrollPrefillToast(`✅ 成功填充 ${filledCount} 个字段`);
+
+  // 更新UI
+  updatePrefillUI(currentMatchResults, null);
+}
+
+/**
+ * 移除预填UI
+ */
+function removeScrollPrefillUI() {
+  if (scrollPrefillUI) {
+    scrollPrefillUI.remove();
+    scrollPrefillUI = null;
+  }
+}
+
+/**
+ * 显示预填提示Toast
+ */
+function showScrollPrefillToast(message) {
+  const toast = document.createElement("div");
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999999;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    animation: slideDown 0.4s ease;
+  `;
+  toast.textContent = message;
+
+  // 添加动画样式
+  if (!document.getElementById("prefill-toast-style")) {
+    const style = document.createElement("style");
+    style.id = "prefill-toast-style";
+    style.textContent = `
+      @keyframes slideDown {
+        from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.animation = "slideDown 0.3s ease reverse";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+/**
+ * HTML转义
+ */
+function escapeHtml(text) {
+  if (!text) return "";
+  const div = document.createElement("div");
+  div.textContent = String(text);
+  return div.innerHTML;
+}
+
+// 监听启动滚动预填的消息
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  if (request.action === "startScrollPrefill") {
+    console.log("收到启动滚动预填请求:", request.resumeData);
+    enableScrollPrefill(request.resumeData);
+    sendResponse({ success: true });
+    return true;
+  }
+
+  if (request.action === "stopScrollPrefill") {
+    disableScrollPrefill();
+    sendResponse({ success: true });
+    return true;
+  }
+});
+
+// ==========================================
 // 初始化
 // ==========================================
 

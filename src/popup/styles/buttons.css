@@ -145,6 +145,59 @@
   box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
 }
 
+/* 滚动预填按钮 */
+.action-buttons .btn-scroll-prefill {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.action-buttons .btn-scroll-prefill::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: scroll-shimmer 2s infinite;
+}
+
+@keyframes scroll-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.action-buttons .btn-scroll-prefill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+.action-buttons .btn-scroll-prefill.active {
+  background: linear-gradient(135deg, #52c41a, #389e0d);
+  animation: pulse-active 1.5s infinite;
+}
+
+@keyframes pulse-active {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(82, 196, 26, 0);
+  }
+}
+
 /* 测试连接按钮 */
 .test-btn {
   flex: 1;

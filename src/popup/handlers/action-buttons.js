@@ -97,6 +97,14 @@ function initActionButtons() {
     });
   }
 
+  // 滚动预填按钮
+  var scrollPrefillBtn = document.getElementById("scroll-prefill");
+  if (scrollPrefillBtn) {
+    scrollPrefillBtn.addEventListener("click", function () {
+      startScrollPrefillMode(scrollPrefillBtn);
+    });
+  }
+
   // 保存设置按钮
   var saveSettingsBtn = document.getElementById("save-settings");
   if (saveSettingsBtn) {
@@ -1325,6 +1333,127 @@ function showOptimizeDialog() {
       overlay.remove();
     }
   });
+}
+
+// ==========================================
+// 滚动预填功能
+// ==========================================
+
+// 滚动预填模式状态
+let scrollPrefillActive = false;
+
+/**
+ * 启动滚动预填模式
+ */
+function startScrollPrefillMode(buttonElement) {
+  if (scrollPrefillActive) {
+    // 如果已激活，则停止
+    stopScrollPrefillMode(buttonElement);
+    return;
+  }
+
+  getNotificationService()("正在启动滚动预填模式...", "info");
+
+  // 收集简历数据
+  var resumeData = collectFormData();
+
+  // 检查是否有数据
+  var hasData = false;
+  if (resumeData.personalInfo) {
+    for (var key in resumeData.personalInfo) {
+      if (resumeData.personalInfo[key]) {
+        hasData = true;
+        break;
+      }
+    }
+  }
+
+  if (!hasData) {
+    getNotificationService()("请先填写简历信息", "warning");
+    return;
+  }
+
+  // 获取当前标签页
+  if (typeof chrome !== "undefined" && chrome.tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      if (tabs && tabs.length > 0 && tabs[0].id) {
+        var tabId = tabs[0].id;
+        var tabUrl = tabs[0].url || "";
+
+        // 检查是否是支持的页面
+        if (
+          tabUrl.startsWith("chrome://") ||
+          tabUrl.startsWith("chrome-extension://") ||
+          tabUrl.startsWith("about:")
+        ) {
+          getNotificationService()("无法在此页面使用预填功能", "error");
+          return;
+        }
+
+        // 确保content script已注入
+        withContentScript(tabId, function () {
+          // 发送启动滚动预填消息
+          chrome.tabs.sendMessage(
+            tabId,
+            {
+              action: "startScrollPrefill",
+              resumeData: resumeData,
+            },
+            function (response) {
+              if (chrome.runtime.lastError) {
+                console.error("启动滚动预填失败:", chrome.runtime.lastError);
+                getNotificationService()("启动失败，请刷新页面后重试", "error");
+                return;
+              }
+
+              if (response && response.success) {
+                scrollPrefillActive = true;
+                if (buttonElement) {
+                  buttonElement.classList.add("active");
+                  buttonElement.innerHTML = "🎯 停止预填";
+                }
+                getNotificationService()("滚动预填模式已启动！滚动页面自动检测表单", "success");
+              }
+            }
+          );
+        });
+      } else {
+        getNotificationService()("未找到活动标签页", "error");
+      }
+    });
+  } else {
+    getNotificationService()("浏览器扩展 API 不可用", "error");
+  }
+}
+
+/**
+ * 停止滚动预填模式
+ */
+function stopScrollPrefillMode(buttonElement) {
+  if (typeof chrome !== "undefined" && chrome.tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      if (tabs && tabs.length > 0 && tabs[0].id) {
+        chrome.tabs.sendMessage(
+          tabs[0].id,
+          { action: "stopScrollPrefill" },
+          function (response) {
+            scrollPrefillActive = false;
+            if (buttonElement) {
+              buttonElement.classList.remove("active");
+              buttonElement.innerHTML = "🎯 滚动预填";
+            }
+            getNotificationService()("滚动预填模式已停止", "info");
+          }
+        );
+      }
+    });
+  }
+
+  scrollPrefillActive = false;
+  if (buttonElement) {
+    buttonElement.classList.remove("active");
+    buttonElement.innerHTML = "🎯 滚动预填";
+  }
 }
 
 // ==========================================
