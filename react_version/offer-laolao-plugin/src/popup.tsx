@@ -2,11 +2,19 @@ import { useState } from "react"
 import { BasicInfoForm } from "~features/popup/BasicInfoForm"
 import { ModelSettingsForm, ParseSettingsForm } from "~features/popup/settings"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~components/ui/tabs"
+import { Button } from "~components/ui/button"
 
 import "~style.css"
 
 function IndexPopup() {
   const [activeTab, setActiveTab] = useState("resume")
+  const [saveMessage, setSaveMessage] = useState("")
+
+  // 处理保存设置
+  const handleSaveSettings = () => {
+    setSaveMessage("✓ 设置已保存")
+    setTimeout(() => setSaveMessage(""), 2000)
+  }
 
   return (
     <div className="plasmo-w-[400px] plasmo-min-h-[500px] plasmo-bg-background">
@@ -53,6 +61,21 @@ function IndexPopup() {
 
               {/* 简历解析配置 */}
               <ParseSettingsForm />
+
+              {/* 保存设置按钮 */}
+              <div className="plasmo-pt-2">
+                <Button
+                  onClick={handleSaveSettings}
+                  className="plasmo-w-full plasmo-bg-primary hover:plasmo-bg-primary/90"
+                >
+                  💾 保存设置
+                </Button>
+                {saveMessage && (
+                  <p className="plasmo-text-center plasmo-text-sm plasmo-text-green-600 plasmo-mt-2">
+                    {saveMessage}
+                  </p>
+                )}
+              </div>
 
               {/* 使用说明 */}
               <div className="plasmo-mt-6 plasmo-p-4 plasmo-bg-muted/30 plasmo-rounded-lg">

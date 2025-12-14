@@ -2,7 +2,7 @@
  * AI 模型配置表单
  */
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Input } from "~components/ui/input"
 import { Label } from "~components/ui/label"
 import { Button } from "~components/ui/button"
@@ -14,10 +14,14 @@ import {
   SelectValue,
 } from "~components/ui/select"
 import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
-import { getModelProviders, getModelsByProvider } from "~config/model-providers"
+import { getModelProviders, getModelsByProvider, getProvider } from "~config/model-providers"
 import { testModelConnection } from "~services/model-api"
 import type { ModelSettings } from "~types/settings"
-import { defaultModelSettings } from "~types/settings"
+import {
+  defaultModelSettings,
+  getApiKeyForProvider,
+  setApiKeyForProvider,
+} from "~types/settings"
 
 export function ModelSettingsForm() {
   const [settings, setSettings, isLoading] = useStorage<ModelSettings>(
@@ -34,6 +38,17 @@ export function ModelSettingsForm() {
 
   const providers = getModelProviders()
 
+  // 获取当前提供商的 API Key
+  const currentApiKey = useMemo(() => {
+    return getApiKeyForProvider(settings, settings.provider)
+  }, [settings])
+
+  // 获取当前提供商名称
+  const currentProviderName = useMemo(() => {
+    const provider = getProvider(settings.provider)
+    return provider?.name || settings.provider
+  }, [settings.provider])
+
   // 当提供商变化时，更新模型列表
   useEffect(() => {
     if (settings.provider) {
@@ -46,8 +61,15 @@ export function ModelSettingsForm() {
       ) {
         setSettings((prev) => ({ ...prev, model: "" }))
       }
+      // 清除测试结果
+      setTestResult(null)
     }
   }, [settings.provider])
+
+  // 处理 API Key 变化
+  const handleApiKeyChange = (apiKey: string) => {
+    setSettings((prev) => setApiKeyForProvider(prev, prev.provider, apiKey))
+  }
 
   // 处理测试连接
   const handleTestConnection = async () => {
@@ -147,20 +169,23 @@ export function ModelSettingsForm() {
         </p>
       </div>
 
-      {/* API Key */}
+      {/* API Key - 每个提供商独立存储 */}
       <div className="plasmo-space-y-2">
-        <Label htmlFor="model-api-key">API Key</Label>
+        <Label htmlFor="model-api-key">
+          API Key
+          <span className="plasmo-text-xs plasmo-text-muted-foreground plasmo-ml-2">
+            ({currentProviderName})
+          </span>
+        </Label>
         <Input
           id="model-api-key"
           type="password"
-          placeholder="请输入模型 API 密钥"
-          value={settings.apiKey}
-          onChange={(e) =>
-            setSettings((prev) => ({ ...prev, apiKey: e.target.value }))
-          }
+          placeholder={`请输入 ${currentProviderName} 的 API 密钥`}
+          value={currentApiKey}
+          onChange={(e) => handleApiKeyChange(e.target.value)}
         />
         <p className="plasmo-text-xs plasmo-text-muted-foreground">
-          在对应平台的控制台获取 API Key
+          每个提供商的 API Key 独立存储，切换提供商时会自动加载对应的 Key
         </p>
       </div>
 
@@ -188,7 +213,7 @@ export function ModelSettingsForm() {
         <Button
           variant="outline"
           onClick={handleTestConnection}
-          disabled={isTesting || !settings.apiKey}
+          disabled={isTesting || !currentApiKey}
           className="plasmo-w-full"
         >
           {isTesting ? "测试中..." : "🔗 测试连接"}
@@ -270,4 +295,3 @@ export function ModelSettingsForm() {
     </div>
   )
 }
-

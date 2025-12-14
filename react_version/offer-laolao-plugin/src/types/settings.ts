@@ -21,9 +21,12 @@ export interface ModelProvider {
 // 模型设置
 export interface ModelSettings {
   provider: string
-  apiKey: string
   model: string
   customUrl?: string
+  // 每个提供商独立存储 API Key
+  apiKeys: Record<string, string>
+  // 兼容旧版本的单一 apiKey 字段
+  apiKey?: string
 }
 
 // 简历解析设置
@@ -35,9 +38,42 @@ export interface ParseSettings {
 // 默认模型设置
 export const defaultModelSettings: ModelSettings = {
   provider: "deepseek",
-  apiKey: "",
   model: "",
   customUrl: "",
+  apiKeys: {},
+}
+
+/**
+ * 获取当前提供商的 API Key
+ */
+export function getApiKeyForProvider(settings: ModelSettings, providerId?: string): string {
+  const provider = providerId || settings.provider
+  // 优先从 apiKeys 中获取（使用 in 操作符检查键是否存在，而不是检查值是否 truthy）
+  if (settings.apiKeys && provider in settings.apiKeys) {
+    return settings.apiKeys[provider]
+  }
+  // 兼容旧版本：如果 apiKeys 中没有，尝试使用旧的 apiKey 字段
+  if (settings.apiKey) {
+    return settings.apiKey
+  }
+  return ""
+}
+
+/**
+ * 设置指定提供商的 API Key
+ */
+export function setApiKeyForProvider(
+  settings: ModelSettings,
+  providerId: string,
+  apiKey: string
+): ModelSettings {
+  return {
+    ...settings,
+    apiKeys: {
+      ...settings.apiKeys,
+      [providerId]: apiKey,
+    },
+  }
 }
 
 // 默认简历解析设置

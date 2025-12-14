@@ -8,6 +8,7 @@ import type {
   CallModelOptions,
   TestConnectionResult,
 } from "~types/settings"
+import { getApiKeyForProvider } from "~types/settings"
 import { MODEL_PROVIDERS, getProvider } from "~config/model-providers"
 
 /**
@@ -39,7 +40,11 @@ export async function callModelAPI(
   settings: ModelSettings,
   options: CallModelOptions = {}
 ): Promise<string> {
-  if (!settings.apiKey) {
+  const providerId = settings.provider || "deepseek"
+  // 使用新的 API Key 获取方式，支持每个提供商独立存储
+  const apiKey = getApiKeyForProvider(settings, providerId)
+
+  if (!apiKey) {
     throw new Error("请先在设置中配置模型 API Key")
   }
 
@@ -47,7 +52,6 @@ export async function callModelAPI(
     throw new Error("请先在设置中选择要使用的模型")
   }
 
-  const providerId = settings.provider || "deepseek"
   const provider = getProvider(providerId)
 
   if (!provider) {
@@ -86,7 +90,7 @@ export async function callModelAPI(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      [provider.authHeader]: provider.authPrefix + settings.apiKey,
+      [provider.authHeader]: provider.authPrefix + apiKey,
     },
     body: JSON.stringify(requestBody),
   })
@@ -140,7 +144,10 @@ export async function callModelAPI(
 export async function testModelConnection(
   settings: ModelSettings
 ): Promise<TestConnectionResult> {
-  if (!settings.apiKey) {
+  // 使用新的 API Key 获取方式
+  const apiKey = getApiKeyForProvider(settings, settings.provider)
+
+  if (!apiKey) {
     return {
       success: false,
       message: "请先配置 API Key",
