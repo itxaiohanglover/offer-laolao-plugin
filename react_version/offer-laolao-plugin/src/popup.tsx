@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react"
 import { ResumeForm } from "~features/popup/ResumeForm"
 import { ResumeUpload } from "~features/popup/ResumeUpload"
+import { ExportDialog } from "~features/popup/ExportDialog"
 import { ModelSettingsForm, ParseSettingsForm } from "~features/popup/settings"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~components/ui/tabs"
 import { Button } from "~components/ui/button"
@@ -115,6 +116,7 @@ function IndexPopup() {
   const [activeTab, setActiveTab] = useState("resume")
   const [saveMessage, setSaveMessage] = useState("")
   const [fillMessage, setFillMessage] = useState("")
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
 
   // 简历数据存储
   const [resumeData, setResumeData] = useStorage<ResumeData>(
@@ -141,6 +143,13 @@ function IndexPopup() {
 
   return (
     <div className="plasmo-w-[400px] plasmo-min-h-[500px] plasmo-max-h-[600px] plasmo-overflow-auto plasmo-bg-background">
+      {/* 导出对话框 */}
+      <ExportDialog
+        isOpen={isExportDialogOpen}
+        onClose={() => setIsExportDialogOpen(false)}
+        resumeData={resumeData}
+      />
+
       {/* Header */}
       <div className="plasmo-bg-gradient-to-r plasmo-from-primary plasmo-to-purple-600 plasmo-p-4">
         <div className="plasmo-flex plasmo-items-center plasmo-gap-3">
@@ -184,6 +193,17 @@ function IndexPopup() {
 
               {/* 表单区域 */}
               <ResumeForm />
+
+              {/* 导出按钮 */}
+              <div className="plasmo-pt-2 plasmo-pb-4">
+                <Button
+                  onClick={() => setIsExportDialogOpen(true)}
+                  variant="outline"
+                  className="plasmo-w-full"
+                >
+                  📥 导出简历
+                </Button>
+              </div>
             </div>
           </TabsContent>
 
