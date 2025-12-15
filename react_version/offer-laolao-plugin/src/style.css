@@ -53,7 +53,23 @@
   * {
     @apply plasmo-border-border;
   }
+  
   body {
     @apply plasmo-bg-background plasmo-text-foreground;
   }
+}
+
+/* 在 @layer 之外定义，确保更高优先级 */
+html, body {
+  min-width: 400px;
+  min-height: 500px;
+  width: 400px;
+  margin: 0;
+  padding: 0;
+}
+
+#__plasmo {
+  min-width: 400px;
+  min-height: 500px;
+  width: 400px;
 }

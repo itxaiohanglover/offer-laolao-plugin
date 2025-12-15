@@ -1,14 +1,137 @@
-import { useState } from "react"
-import { BasicInfoForm } from "~features/popup/BasicInfoForm"
+import React, { useState, useCallback } from "react"
+import { ResumeForm } from "~features/popup/ResumeForm"
+import { ResumeUpload } from "~features/popup/ResumeUpload"
 import { ModelSettingsForm, ParseSettingsForm } from "~features/popup/settings"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~components/ui/tabs"
 import { Button } from "~components/ui/button"
+import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
+import { defaultResumeData, type ResumeData } from "~types/resume"
+import type { ParsedResumeData } from "~services/resume-parse"
 
 import "~style.css"
+
+/**
+ * 将解析后的数据转换为存储格式
+ */
+function convertParsedDataToResumeData(
+  parsedData: ParsedResumeData,
+  existingData: ResumeData
+): ResumeData {
+  const result = { ...existingData }
+
+  // 转换个人信息
+  if (parsedData.personalInfo) {
+    result.personalInfo = {
+      name: parsedData.personalInfo.name || existingData.personalInfo.name,
+      gender: parsedData.personalInfo.gender || existingData.personalInfo.gender,
+      birthDate: existingData.personalInfo.birthDate, // 解析数据中通常没有出生日期
+      phone: parsedData.personalInfo.phone || existingData.personalInfo.phone,
+      email: parsedData.personalInfo.email || existingData.personalInfo.email,
+      idCard: existingData.personalInfo.idCard,
+      location: existingData.personalInfo.location,
+      politicalStatus:
+        parsedData.personalInfo["political-status"] ||
+        existingData.personalInfo.politicalStatus,
+    }
+
+    // 求职期望
+    result.jobExpectation = {
+      ...existingData.jobExpectation,
+      expectedPosition:
+        parsedData.personalInfo["expected-position"] ||
+        existingData.jobExpectation.expectedPosition,
+      expectedIndustry:
+        parsedData.personalInfo["expected-industry"] ||
+        existingData.jobExpectation.expectedIndustry,
+      expectedSalary:
+        parsedData.personalInfo["expected-salary"] ||
+        existingData.jobExpectation.expectedSalary,
+      expectedLocation:
+        parsedData.personalInfo["expected-location"] ||
+        existingData.jobExpectation.expectedLocation,
+    }
+
+    // 自我介绍
+    if (parsedData.personalInfo["self-intro"]) {
+      result.selfIntro = parsedData.personalInfo["self-intro"]
+    }
+  }
+
+  // 转换教育经历
+  if (parsedData.education && parsedData.education.length > 0) {
+    result.education = parsedData.education.map((edu, index) => ({
+      school: edu[`education[${index}][school]`] || "",
+      major: edu[`education[${index}][major]`] || "",
+      degree: edu[`education[${index}][degree]`] || "",
+      rank: edu[`education[${index}][rank]`] || "",
+      startDate: edu[`education[${index}][start-date]`] || "",
+      endDate: edu[`education[${index}][end-date]`] || "",
+    }))
+  }
+
+  // 转换工作/实习经历
+  if (parsedData.workExperience && parsedData.workExperience.length > 0) {
+    result.workExperience = parsedData.workExperience.map((work, index) => ({
+      company: work[`internship[${index}][company]`] || "",
+      position: work[`internship[${index}][position]`] || "",
+      startDate: work[`internship[${index}][start-date]`] || "",
+      endDate: work[`internship[${index}][end-date]`] || "",
+      description: work[`internship[${index}][description]`] || "",
+    }))
+  }
+
+  // 转换项目经历
+  if (parsedData.projects && parsedData.projects.length > 0) {
+    result.projects = parsedData.projects.map((proj, index) => ({
+      projectName: proj[`project[${index}][project-name]`] || "",
+      role: proj[`project[${index}][role]`] || "",
+      projectTime: proj[`project[${index}][project-time]`] || "",
+      projectDesc: proj[`project[${index}][project-desc]`] || "",
+      responsibilities: proj[`project[${index}][responsibilities]`] || "",
+    }))
+  }
+
+  // 转换技能
+  if (parsedData.skills && parsedData.skills.length > 0) {
+    result.skills = parsedData.skills.map((skill, index) => ({
+      name: skill[`skills[${index}][name]`] || "",
+      level: skill[`skills[${index}][level]`] || "",
+    }))
+  }
+
+  // 转换语言能力
+  if (parsedData.languages && parsedData.languages.length > 0) {
+    result.languages = parsedData.languages.map((lang, index) => ({
+      name: lang[`language[${index}][name]`] || "",
+      proficiency: lang[`language[${index}][proficiency]`] || "",
+      certificate: lang[`language[${index}][certificate]`] || "",
+    }))
+  }
+
+  return result
+}
 
 function IndexPopup() {
   const [activeTab, setActiveTab] = useState("resume")
   const [saveMessage, setSaveMessage] = useState("")
+  const [fillMessage, setFillMessage] = useState("")
+
+  // 简历数据存储
+  const [resumeData, setResumeData] = useStorage<ResumeData>(
+    STORAGE_KEYS.RESUME_DATA,
+    defaultResumeData
+  )
+
+  // 处理解析数据填充
+  const handleParsedData = useCallback(
+    (parsedData: ParsedResumeData) => {
+      const newResumeData = convertParsedDataToResumeData(parsedData, resumeData)
+      setResumeData(newResumeData)
+      setFillMessage("✓ 数据已填充到表单")
+      setTimeout(() => setFillMessage(""), 3000)
+    },
+    [resumeData, setResumeData]
+  )
 
   // 处理保存设置
   const handleSaveSettings = () => {
@@ -17,7 +140,7 @@ function IndexPopup() {
   }
 
   return (
-    <div className="plasmo-w-[400px] plasmo-min-h-[500px] plasmo-bg-background">
+    <div className="plasmo-w-[400px] plasmo-min-h-[500px] plasmo-max-h-[600px] plasmo-overflow-auto plasmo-bg-background">
       {/* Header */}
       <div className="plasmo-bg-gradient-to-r plasmo-from-primary plasmo-to-purple-600 plasmo-p-4">
         <div className="plasmo-flex plasmo-items-center plasmo-gap-3">
@@ -45,8 +168,22 @@ function IndexPopup() {
 
           {/* Resume Content */}
           <TabsContent value="resume">
-            <div className="plasmo-py-2">
-              <BasicInfoForm />
+            <div className="plasmo-py-2 plasmo-space-y-4">
+              {/* 简历上传区域 */}
+              <div className="plasmo-p-3 plasmo-bg-muted/30 plasmo-rounded-lg">
+                <h4 className="plasmo-text-sm plasmo-font-medium plasmo-mb-3 plasmo-flex plasmo-items-center plasmo-gap-2">
+                  📤 上传简历
+                </h4>
+                <ResumeUpload onParsedData={handleParsedData} />
+                {fillMessage && (
+                  <p className="plasmo-text-center plasmo-text-sm plasmo-text-green-600 plasmo-mt-2">
+                    {fillMessage}
+                  </p>
+                )}
+              </div>
+
+              {/* 表单区域 */}
+              <ResumeForm />
             </div>
           </TabsContent>
 

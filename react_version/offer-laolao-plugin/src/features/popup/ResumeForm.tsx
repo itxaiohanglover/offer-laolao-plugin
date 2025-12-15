@@ -1,0 +1,608 @@
+import React, { useState, useEffect, useCallback, useRef } from "react"
+import { Input } from "~components/ui/input"
+import { Label } from "~components/ui/label"
+import { Button } from "~components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~components/ui/select"
+import { DatePicker } from "~components/ui/date-picker"
+import {
+  basicInfoFields,
+  jobExpectationFields,
+  skillFields,
+  educationFields,
+  workExperienceFields,
+  projectFields,
+  languageFields,
+  customFieldFields,
+  type FieldConfig,
+  type DynamicFieldConfig,
+} from "~config/field-config"
+import {
+  type ResumeData,
+  type PersonalInfo,
+  type JobExpectation,
+  type Education,
+  type WorkExperience,
+  type Project,
+  type Skill,
+  type Language,
+  type CustomField,
+  defaultResumeData,
+} from "~types/resume"
+import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
+
+/**
+ * 可折叠的表单区域
+ */
+function FormSection({
+  title,
+  icon,
+  children,
+  defaultOpen = true,
+}: {
+  title: string
+  icon: string
+  children: React.ReactNode
+  defaultOpen?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+  const sectionRef = useRef<HTMLDivElement>(null)
+
+  // #region agent log
+  useEffect(() => {
+    const el = sectionRef.current
+    fetch('http://127.0.0.1:7242/ingest/7f496f30-9e48-426d-9f90-693429750f84',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ResumeForm.tsx:FormSection',message:'FormSection rendered',data:{title,isOpen,elementWidth:el?.offsetWidth,elementHeight:el?.offsetHeight},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
+  }, [title, isOpen])
+  // #endregion
+
+  return (
+    <div ref={sectionRef} className="plasmo-border plasmo-border-border plasmo-rounded-lg plasmo-overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="plasmo-w-full plasmo-flex plasmo-items-center plasmo-justify-between plasmo-p-3 plasmo-bg-muted/30 hover:plasmo-bg-muted/50 plasmo-transition-colors"
+      >
+        <div className="plasmo-flex plasmo-items-center plasmo-gap-2">
+          <span>{icon}</span>
+          <span className="plasmo-font-medium plasmo-text-sm">{title}</span>
+        </div>
+        <span className="plasmo-text-muted-foreground">
+          {isOpen ? "▼" : "▶"}
+        </span>
+      </button>
+      {isOpen && <div className="plasmo-p-3 plasmo-space-y-3">{children}</div>}
+    </div>
+  )
+}
+
+/**
+ * 动态列表项组件
+ */
+function DynamicListItem<T extends Record<string, any>>({
+  item,
+  index,
+  fields,
+  onChange,
+  onRemove,
+  canRemove,
+}: {
+  item: T
+  index: number
+  fields: DynamicFieldConfig<keyof T>[]
+  onChange: (index: number, field: keyof T, value: string) => void
+  onRemove: (index: number) => void
+  canRemove: boolean
+}) {
+  const renderField = (field: DynamicFieldConfig<keyof T>) => {
+    const value = (item[field.name] as string) || ""
+
+    switch (field.type) {
+      case "select":
+        return (
+          <Select
+            value={value || "empty"}
+            onValueChange={(v) =>
+              onChange(index, field.name, v === "empty" ? "" : v)
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={field.placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options?.map((option) => (
+                <SelectItem
+                  key={option.value || "empty"}
+                  value={option.value || "empty"}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )
+
+      case "date":
+        return (
+          <DatePicker
+            value={value}
+            onChange={(v) => onChange(index, field.name, v)}
+            placeholder={field.placeholder || "选择日期"}
+          />
+        )
+
+      case "textarea":
+        return (
+          <textarea
+            value={value}
+            onChange={(e) => onChange(index, field.name, e.target.value)}
+            placeholder={field.placeholder}
+            className="plasmo-w-full plasmo-min-h-[60px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
+          />
+        )
+
+      default:
+        return (
+          <Input
+            value={value}
+            onChange={(e) => onChange(index, field.name, e.target.value)}
+            placeholder={field.placeholder}
+          />
+        )
+    }
+  }
+
+  return (
+    <div className="plasmo-p-3 plasmo-bg-muted/20 plasmo-rounded-lg plasmo-space-y-2">
+      <div className="plasmo-flex plasmo-justify-between plasmo-items-center plasmo-mb-2">
+        <span className="plasmo-text-xs plasmo-text-muted-foreground">
+          #{index + 1}
+        </span>
+        {canRemove && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemove(index)}
+            className="plasmo-h-6 plasmo-w-6 plasmo-p-0 plasmo-text-destructive hover:plasmo-bg-destructive/10"
+          >
+            ✕
+          </Button>
+        )}
+      </div>
+      <div className="plasmo-grid plasmo-gap-2">
+        {fields.map((field) => (
+          <div key={String(field.name)} className="plasmo-space-y-1">
+            <Label className="plasmo-text-xs">{field.label}</Label>
+            {renderField(field)}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 完整简历表单
+ */
+export function ResumeForm() {
+  const formRef = useRef<HTMLDivElement>(null)
+  const [resumeData, setResumeData, isLoading] = useStorage<ResumeData>(
+    STORAGE_KEYS.RESUME_DATA,
+    defaultResumeData
+  )
+
+  // 本地表单状态
+  const [formData, setFormData] = useState<ResumeData>(defaultResumeData)
+  const [isDirty, setIsDirty] = useState(false)
+
+  // 从存储加载数据 - 与默认值合并以确保所有字段存在
+  useEffect(() => {
+    if (!isLoading && resumeData) {
+      // 深度合并存储数据和默认值，确保所有字段都存在
+      setFormData({
+        personalInfo: { ...defaultResumeData.personalInfo, ...resumeData.personalInfo },
+        jobExpectation: { ...defaultResumeData.jobExpectation, ...resumeData.jobExpectation },
+        selfIntro: resumeData.selfIntro ?? defaultResumeData.selfIntro,
+        education: resumeData.education ?? defaultResumeData.education,
+        workExperience: resumeData.workExperience ?? defaultResumeData.workExperience,
+        projects: resumeData.projects ?? defaultResumeData.projects,
+        skills: resumeData.skills ?? defaultResumeData.skills,
+        languages: resumeData.languages ?? defaultResumeData.languages,
+        customFields: resumeData.customFields ?? defaultResumeData.customFields,
+      })
+    }
+  }, [isLoading, resumeData])
+
+  // 自动保存
+  useEffect(() => {
+    if (isDirty && !isLoading) {
+      const timer = setTimeout(() => {
+        setResumeData(formData)
+        setIsDirty(false)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [formData, isDirty, isLoading, setResumeData])
+
+  // 更新个人信息
+  const updatePersonalInfo = useCallback(
+    (field: keyof PersonalInfo, value: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        personalInfo: { ...prev.personalInfo, [field]: value },
+      }))
+      setIsDirty(true)
+    },
+    []
+  )
+
+  // 更新求职期望
+  const updateJobExpectation = useCallback(
+    (field: keyof JobExpectation, value: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        jobExpectation: { ...prev.jobExpectation, [field]: value },
+      }))
+      setIsDirty(true)
+    },
+    []
+  )
+
+  // 更新自我介绍
+  const updateSelfIntro = useCallback((value: string) => {
+    setFormData((prev) => ({ ...prev, selfIntro: value }))
+    setIsDirty(true)
+  }, [])
+
+  // 通用动态列表更新函数
+  const createListHandlers = <T extends Record<string, any>>(
+    key: keyof ResumeData,
+    defaultItem: T
+  ) => ({
+    update: (index: number, field: keyof T, value: string) => {
+      setFormData((prev) => {
+        const list = [...(prev[key] as T[])]
+        list[index] = { ...list[index], [field]: value }
+        return { ...prev, [key]: list }
+      })
+      setIsDirty(true)
+    },
+    add: () => {
+      setFormData((prev) => ({
+        ...prev,
+        [key]: [...(prev[key] as T[]), { ...defaultItem }],
+      }))
+      setIsDirty(true)
+    },
+    remove: (index: number) => {
+      setFormData((prev) => ({
+        ...prev,
+        [key]: (prev[key] as T[]).filter((_, i) => i !== index),
+      }))
+      setIsDirty(true)
+    },
+  })
+
+  // 各类动态列表处理函数
+  const educationHandlers = createListHandlers<Education>("education", {
+    school: "",
+    major: "",
+    degree: "",
+    rank: "",
+    startDate: "",
+    endDate: "",
+  })
+
+  const workHandlers = createListHandlers<WorkExperience>("workExperience", {
+    company: "",
+    position: "",
+    startDate: "",
+    endDate: "",
+    description: "",
+  })
+
+  const projectHandlers = createListHandlers<Project>("projects", {
+    projectName: "",
+    role: "",
+    projectTime: "",
+    projectDesc: "",
+    responsibilities: "",
+  })
+
+  const skillHandlers = createListHandlers<Skill>("skills", {
+    name: "",
+    level: "",
+  })
+
+  const languageHandlers = createListHandlers<Language>("languages", {
+    name: "",
+    proficiency: "",
+    certificate: "",
+  })
+
+  const customFieldHandlers = createListHandlers<CustomField>("customFields", {
+    name: "",
+    content: "",
+  })
+
+  // 渲染静态字段
+  const renderStaticField = (
+    field: FieldConfig<string>,
+    value: string,
+    onChange: (value: string) => void
+  ) => {
+    switch (field.type) {
+      case "select":
+        return (
+          <Select
+            value={value || "empty"}
+            onValueChange={(v) => onChange(v === "empty" ? "" : v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={field.placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options?.map((option) => (
+                <SelectItem
+                  key={option.value || "empty"}
+                  value={option.value || "empty"}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )
+
+      case "date":
+        return (
+          <DatePicker
+            value={value}
+            onChange={onChange}
+            placeholder={field.placeholder || "选择日期"}
+          />
+        )
+
+      case "textarea":
+        return (
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={field.placeholder}
+            className="plasmo-w-full plasmo-min-h-[80px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
+          />
+        )
+
+      default:
+        return (
+          <Input
+            type={field.type}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={field.placeholder}
+          />
+        )
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="plasmo-flex plasmo-items-center plasmo-justify-center plasmo-py-8">
+        <div className="plasmo-text-muted-foreground">加载中...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div ref={formRef} className="plasmo-space-y-3">
+      {/* 基本信息 */}
+      <FormSection title="基本信息" icon="👤" defaultOpen={true}>
+        <div className="plasmo-grid plasmo-gap-3">
+          {basicInfoFields.map((field) => (
+            <div key={field.id} className="plasmo-space-y-1">
+              <Label className="plasmo-text-xs">
+                {field.label}
+                {field.required && (
+                  <span className="plasmo-text-destructive plasmo-ml-1">*</span>
+                )}
+              </Label>
+              {renderStaticField(
+                field as FieldConfig<string>,
+                formData.personalInfo[field.id] || "",
+                (value) => updatePersonalInfo(field.id, value)
+              )}
+            </div>
+          ))}
+        </div>
+      </FormSection>
+
+      {/* 求职期望 */}
+      <FormSection title="求职期望" icon="🎯" defaultOpen={false}>
+        <div className="plasmo-grid plasmo-gap-3">
+          {jobExpectationFields.map((field) => (
+            <div key={field.id} className="plasmo-space-y-1">
+              <Label className="plasmo-text-xs">{field.label}</Label>
+              {renderStaticField(
+                field as FieldConfig<string>,
+                formData.jobExpectation[field.id] || "",
+                (value) => updateJobExpectation(field.id, value)
+              )}
+            </div>
+          ))}
+        </div>
+      </FormSection>
+
+      {/* 自我介绍 */}
+      <FormSection title="自我介绍" icon="📝" defaultOpen={false}>
+        <textarea
+          value={formData.selfIntro}
+          onChange={(e) => updateSelfIntro(e.target.value)}
+          placeholder="请输入自我介绍..."
+          className="plasmo-w-full plasmo-min-h-[100px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
+        />
+      </FormSection>
+
+      {/* 教育经历 */}
+      <FormSection title="教育经历" icon="🎓" defaultOpen={false}>
+        <div className="plasmo-space-y-2">
+          {formData.education.map((item, index) => (
+            <DynamicListItem
+              key={index}
+              item={item}
+              index={index}
+              fields={educationFields}
+              onChange={educationHandlers.update}
+              onRemove={educationHandlers.remove}
+              canRemove={formData.education.length > 1}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={educationHandlers.add}
+            className="plasmo-w-full"
+          >
+            + 添加教育经历
+          </Button>
+        </div>
+      </FormSection>
+
+      {/* 工作/实习经历 */}
+      <FormSection title="工作/实习经历" icon="💼" defaultOpen={false}>
+        <div className="plasmo-space-y-2">
+          {formData.workExperience.map((item, index) => (
+            <DynamicListItem
+              key={index}
+              item={item}
+              index={index}
+              fields={workExperienceFields}
+              onChange={workHandlers.update}
+              onRemove={workHandlers.remove}
+              canRemove={formData.workExperience.length > 1}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={workHandlers.add}
+            className="plasmo-w-full"
+          >
+            + 添加工作/实习经历
+          </Button>
+        </div>
+      </FormSection>
+
+      {/* 项目经历 */}
+      <FormSection title="项目经历" icon="🚀" defaultOpen={false}>
+        <div className="plasmo-space-y-2">
+          {formData.projects.map((item, index) => (
+            <DynamicListItem
+              key={index}
+              item={item}
+              index={index}
+              fields={projectFields}
+              onChange={projectHandlers.update}
+              onRemove={projectHandlers.remove}
+              canRemove={true}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={projectHandlers.add}
+            className="plasmo-w-full"
+          >
+            + 添加项目经历
+          </Button>
+        </div>
+      </FormSection>
+
+      {/* 技能 */}
+      <FormSection title="专业技能" icon="⚡" defaultOpen={false}>
+        <div className="plasmo-space-y-2">
+          {formData.skills.map((item, index) => (
+            <DynamicListItem
+              key={index}
+              item={item}
+              index={index}
+              fields={skillFields}
+              onChange={skillHandlers.update}
+              onRemove={skillHandlers.remove}
+              canRemove={formData.skills.length > 1}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={skillHandlers.add}
+            className="plasmo-w-full"
+          >
+            + 添加技能
+          </Button>
+        </div>
+      </FormSection>
+
+      {/* 语言能力 */}
+      <FormSection title="语言能力" icon="🌐" defaultOpen={false}>
+        <div className="plasmo-space-y-2">
+          {formData.languages.map((item, index) => (
+            <DynamicListItem
+              key={index}
+              item={item}
+              index={index}
+              fields={languageFields}
+              onChange={languageHandlers.update}
+              onRemove={languageHandlers.remove}
+              canRemove={true}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={languageHandlers.add}
+            className="plasmo-w-full"
+          >
+            + 添加语言
+          </Button>
+        </div>
+      </FormSection>
+
+      {/* 自定义字段 */}
+      <FormSection title="其他信息" icon="📋" defaultOpen={false}>
+        <div className="plasmo-space-y-2">
+          {formData.customFields.map((item, index) => (
+            <DynamicListItem
+              key={index}
+              item={item}
+              index={index}
+              fields={customFieldFields}
+              onChange={customFieldHandlers.update}
+              onRemove={customFieldHandlers.remove}
+              canRemove={true}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={customFieldHandlers.add}
+            className="plasmo-w-full"
+          >
+            + 添加自定义字段
+          </Button>
+        </div>
+      </FormSection>
+    </div>
+  )
+}
+

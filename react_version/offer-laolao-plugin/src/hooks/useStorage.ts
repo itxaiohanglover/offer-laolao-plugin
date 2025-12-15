@@ -36,6 +36,28 @@ export function useStorage<T>(key: string, defaultValue: T) {
     loadData()
   }, [key])
 
+  // 监听存储变化，同步其他 useStorage 实例的更新
+  useEffect(() => {
+    if (typeof chrome === "undefined" || !chrome.storage) {
+      return
+    }
+
+    const handleStorageChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string
+    ) => {
+      if (areaName === "local" && changes[key]) {
+        setValue(changes[key].newValue as T)
+      }
+    }
+
+    chrome.storage.onChanged.addListener(handleStorageChange)
+
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange)
+    }
+  }, [key])
+
   // 更新存储数据
   const updateValue = useCallback(
     (newValue: T | ((prev: T) => T)) => {
