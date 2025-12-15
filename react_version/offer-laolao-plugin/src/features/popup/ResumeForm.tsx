@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "~components/ui/select"
 import { DatePicker } from "~components/ui/date-picker"
+import { FieldFillButton } from "~components/ui/field-fill-button"
 import {
   basicInfoFields,
   jobExpectationFields,
@@ -83,6 +84,7 @@ function DynamicListItem<T extends Record<string, any>>({
   onChange,
   onRemove,
   canRemove,
+  listType = "item",
 }: {
   item: T
   index: number
@@ -90,61 +92,99 @@ function DynamicListItem<T extends Record<string, any>>({
   onChange: (index: number, field: keyof T, value: string) => void
   onRemove: (index: number) => void
   canRemove: boolean
+  listType?: string
 }) {
   const renderField = (field: DynamicFieldConfig<keyof T>) => {
     const value = (item[field.name] as string) || ""
+    const fieldId = `${listType}[${index}][${String(field.name)}]`
+    const fieldLabel = field.label
 
     switch (field.type) {
       case "select":
         return (
-          <Select
-            value={value || "empty"}
-            onValueChange={(v) =>
-              onChange(index, field.name, v === "empty" ? "" : v)
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={field.placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {field.options?.map((option) => (
-                <SelectItem
-                  key={option.value || "empty"}
-                  value={option.value || "empty"}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
+            <Select
+              value={value || "empty"}
+              onValueChange={(v) =>
+                onChange(index, field.name, v === "empty" ? "" : v)
+              }
+            >
+              <SelectTrigger className="plasmo-flex-1">
+                <SelectValue placeholder={field.placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options?.map((option) => (
+                  <SelectItem
+                    key={option.value || "empty"}
+                    value={option.value || "empty"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldFillButton
+              fieldId={fieldId}
+              fieldLabel={fieldLabel}
+              getValue={() => {
+                // 对于select，返回选中项的文本
+                const opt = field.options?.find(o => o.value === value)
+                return opt?.label || value
+              }}
+            />
+          </div>
         )
 
       case "date":
         return (
-          <DatePicker
-            value={value}
-            onChange={(v) => onChange(index, field.name, v)}
-            placeholder={field.placeholder || "选择日期"}
-          />
+          <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
+            <div className="plasmo-flex-1">
+              <DatePicker
+                value={value}
+                onChange={(v) => onChange(index, field.name, v)}
+                placeholder={field.placeholder || "选择日期"}
+              />
+            </div>
+            <FieldFillButton
+              fieldId={fieldId}
+              fieldLabel={fieldLabel}
+              getValue={() => value}
+            />
+          </div>
         )
 
       case "textarea":
         return (
-          <textarea
-            value={value}
-            onChange={(e) => onChange(index, field.name, e.target.value)}
-            placeholder={field.placeholder}
-            className="plasmo-w-full plasmo-min-h-[60px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
-          />
+          <div className="plasmo-flex plasmo-items-start plasmo-gap-1.5">
+            <textarea
+              value={value}
+              onChange={(e) => onChange(index, field.name, e.target.value)}
+              placeholder={field.placeholder}
+              className="plasmo-flex-1 plasmo-min-h-[60px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
+            />
+            <FieldFillButton
+              fieldId={fieldId}
+              fieldLabel={fieldLabel}
+              getValue={() => value}
+            />
+          </div>
         )
 
       default:
         return (
-          <Input
-            value={value}
-            onChange={(e) => onChange(index, field.name, e.target.value)}
-            placeholder={field.placeholder}
-          />
+          <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
+            <Input
+              value={value}
+              onChange={(e) => onChange(index, field.name, e.target.value)}
+              placeholder={field.placeholder}
+              className="plasmo-flex-1"
+            />
+            <FieldFillButton
+              fieldId={fieldId}
+              fieldLabel={fieldLabel}
+              getValue={() => value}
+            />
+          </div>
         )
     }
   }
@@ -333,62 +373,99 @@ export function ResumeForm() {
     content: "",
   })
 
-  // 渲染静态字段
+  // 渲染静态字段（带填充按钮）
   const renderStaticField = (
     field: FieldConfig<string>,
     value: string,
     onChange: (value: string) => void
   ) => {
+    const fieldId = field.id
+    const fieldLabel = field.label
+
     switch (field.type) {
       case "select":
         return (
-          <Select
-            value={value || "empty"}
-            onValueChange={(v) => onChange(v === "empty" ? "" : v)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={field.placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {field.options?.map((option) => (
-                <SelectItem
-                  key={option.value || "empty"}
-                  value={option.value || "empty"}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
+            <Select
+              value={value || "empty"}
+              onValueChange={(v) => onChange(v === "empty" ? "" : v)}
+            >
+              <SelectTrigger className="plasmo-flex-1">
+                <SelectValue placeholder={field.placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options?.map((option) => (
+                  <SelectItem
+                    key={option.value || "empty"}
+                    value={option.value || "empty"}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldFillButton
+              fieldId={fieldId}
+              fieldLabel={fieldLabel}
+              getValue={() => {
+                const opt = field.options?.find(o => o.value === value)
+                return opt?.label || value
+              }}
+            />
+          </div>
         )
 
       case "date":
         return (
-          <DatePicker
-            value={value}
-            onChange={onChange}
-            placeholder={field.placeholder || "选择日期"}
-          />
+          <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
+            <div className="plasmo-flex-1">
+              <DatePicker
+                value={value}
+                onChange={onChange}
+                placeholder={field.placeholder || "选择日期"}
+              />
+            </div>
+            <FieldFillButton
+              fieldId={fieldId}
+              fieldLabel={fieldLabel}
+              getValue={() => value}
+            />
+          </div>
         )
 
       case "textarea":
         return (
-          <textarea
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={field.placeholder}
-            className="plasmo-w-full plasmo-min-h-[80px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
-          />
+          <div className="plasmo-flex plasmo-items-start plasmo-gap-1.5">
+            <textarea
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={field.placeholder}
+              className="plasmo-flex-1 plasmo-min-h-[80px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
+            />
+            <FieldFillButton
+              fieldId={fieldId}
+              fieldLabel={fieldLabel}
+              getValue={() => value}
+            />
+          </div>
         )
 
       default:
         return (
-          <Input
-            type={field.type}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={field.placeholder}
-          />
+          <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
+            <Input
+              type={field.type}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={field.placeholder}
+              className="plasmo-flex-1"
+            />
+            <FieldFillButton
+              fieldId={fieldId}
+              fieldLabel={fieldLabel}
+              getValue={() => value}
+            />
+          </div>
         )
     }
   }
@@ -442,12 +519,19 @@ export function ResumeForm() {
 
       {/* 自我介绍 */}
       <FormSection title="自我介绍" icon="📝" defaultOpen={false}>
-        <textarea
-          value={formData.selfIntro}
-          onChange={(e) => updateSelfIntro(e.target.value)}
-          placeholder="请输入自我介绍..."
-          className="plasmo-w-full plasmo-min-h-[100px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
-        />
+        <div className="plasmo-flex plasmo-items-start plasmo-gap-1.5">
+          <textarea
+            value={formData.selfIntro}
+            onChange={(e) => updateSelfIntro(e.target.value)}
+            placeholder="请输入自我介绍..."
+            className="plasmo-flex-1 plasmo-min-h-[100px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
+          />
+          <FieldFillButton
+            fieldId="self-intro"
+            fieldLabel="自我介绍"
+            getValue={() => formData.selfIntro}
+          />
+        </div>
       </FormSection>
 
       {/* 教育经历 */}
@@ -462,6 +546,7 @@ export function ResumeForm() {
               onChange={educationHandlers.update}
               onRemove={educationHandlers.remove}
               canRemove={formData.education.length > 1}
+              listType="education"
             />
           ))}
           <Button
@@ -488,6 +573,7 @@ export function ResumeForm() {
               onChange={workHandlers.update}
               onRemove={workHandlers.remove}
               canRemove={formData.workExperience.length > 1}
+              listType="internship"
             />
           ))}
           <Button
@@ -514,6 +600,7 @@ export function ResumeForm() {
               onChange={projectHandlers.update}
               onRemove={projectHandlers.remove}
               canRemove={true}
+              listType="project"
             />
           ))}
           <Button
@@ -540,6 +627,7 @@ export function ResumeForm() {
               onChange={skillHandlers.update}
               onRemove={skillHandlers.remove}
               canRemove={formData.skills.length > 1}
+              listType="skills"
             />
           ))}
           <Button
@@ -566,6 +654,7 @@ export function ResumeForm() {
               onChange={languageHandlers.update}
               onRemove={languageHandlers.remove}
               canRemove={true}
+              listType="language"
             />
           ))}
           <Button
@@ -592,6 +681,7 @@ export function ResumeForm() {
               onChange={customFieldHandlers.update}
               onRemove={customFieldHandlers.remove}
               canRemove={true}
+              listType="custom"
             />
           ))}
           <Button

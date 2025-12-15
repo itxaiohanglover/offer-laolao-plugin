@@ -73,3 +73,45 @@ html, body {
   min-height: 500px;
   width: 400px;
 }
+
+/* 字段填充按钮样式 */
+@layer components {
+  .field-fill-btn {
+    @apply plasmo-bg-primary/10 plasmo-border plasmo-border-primary/30 
+           plasmo-text-primary plasmo-rounded plasmo-px-2 plasmo-h-9 
+           plasmo-min-w-[32px] plasmo-text-sm plasmo-cursor-pointer 
+           plasmo-transition-all plasmo-flex plasmo-items-center plasmo-justify-center;
+  }
+  
+  .field-fill-btn:hover {
+    @apply plasmo-bg-primary plasmo-text-white plasmo-shadow;
+    transform: translateY(-1px);
+  }
+  
+  .field-fill-btn:disabled {
+    @apply plasmo-opacity-50 plasmo-cursor-not-allowed;
+  }
+}
+
+/* 带填充按钮的输入框容器 */
+.input-with-fill-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-with-fill-wrapper input,
+.input-with-fill-wrapper select,
+.input-with-fill-wrapper textarea {
+  flex: 1;
+}
+
+/* 动画 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
