@@ -35,6 +35,7 @@ import {
   defaultResumeData,
 } from "~types/resume"
 import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
+import { OptimizeDialog } from "./OptimizeDialog"
 
 /**
  * 可折叠的表单区域
@@ -51,17 +52,9 @@ function FormSection({
   defaultOpen?: boolean
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
-  const sectionRef = useRef<HTMLDivElement>(null)
-
-  // #region agent log
-  useEffect(() => {
-    const el = sectionRef.current
-    fetch('http://127.0.0.1:7242/ingest/7f496f30-9e48-426d-9f90-693429750f84',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ResumeForm.tsx:FormSection',message:'FormSection rendered',data:{title,isOpen,elementWidth:el?.offsetWidth,elementHeight:el?.offsetHeight},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'D'})}).catch(()=>{});
-  }, [title, isOpen])
-  // #endregion
 
   return (
-    <div ref={sectionRef} className="plasmo-border plasmo-border-border plasmo-rounded-lg plasmo-overflow-hidden">
+    <div className="plasmo-border plasmo-border-border plasmo-rounded-lg plasmo-overflow-hidden">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -200,6 +193,9 @@ export function ResumeForm() {
   const [formData, setFormData] = useState<ResumeData>(defaultResumeData)
   const [isDirty, setIsDirty] = useState(false)
 
+  // 优化对话框状态
+  const [isOptimizeDialogOpen, setIsOptimizeDialogOpen] = useState(false)
+
   // 从存储加载数据 - 与默认值合并以确保所有字段存在
   useEffect(() => {
     if (!isLoading && resumeData) {
@@ -257,6 +253,13 @@ export function ResumeForm() {
   const updateSelfIntro = useCallback((value: string) => {
     setFormData((prev) => ({ ...prev, selfIntro: value }))
     setIsDirty(true)
+  }, [])
+
+  // 处理优化后的简历数据
+  const handleOptimized = useCallback((optimizedData: ResumeData) => {
+    setFormData(optimizedData)
+    setIsDirty(true)
+    setIsOptimizeDialogOpen(false)
   }, [])
 
   // 通用动态列表更新函数
@@ -602,6 +605,25 @@ export function ResumeForm() {
           </Button>
         </div>
       </FormSection>
+
+      {/* AI 一键优化按钮 */}
+      <div className="plasmo-pt-2">
+        <Button
+          type="button"
+          onClick={() => setIsOptimizeDialogOpen(true)}
+          className="plasmo-w-full plasmo-bg-gradient-to-r plasmo-from-purple-600 plasmo-to-blue-600 hover:plasmo-from-purple-700 hover:plasmo-to-blue-700"
+        >
+          ✨ AI 一键优化简历
+        </Button>
+      </div>
+
+      {/* 优化对话框 */}
+      <OptimizeDialog
+        isOpen={isOptimizeDialogOpen}
+        onClose={() => setIsOptimizeDialogOpen(false)}
+        resumeData={formData}
+        onOptimized={handleOptimized}
+      />
     </div>
   )
 }

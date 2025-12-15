@@ -365,3 +365,313 @@ ${JSON.stringify(resumeFieldsDesc, null, 2)}
   return []
 }
 
+/**
+ * 优化自我介绍
+ */
+async function optimizeSelfIntro(
+  content: string,
+  position: string,
+  industry: string,
+  settings: ModelSettings
+): Promise<string> {
+  const prompt = `作为专业的简历优化专家，请帮我优化以下自我介绍，使其更加专业、有吸引力且符合求职需求。
+
+【当前自我介绍】
+${content}
+
+${position ? `【目标职位】${position}` : ""}
+${industry ? `【目标行业】${industry}` : ""}
+
+【优化要求】
+1. 突出核心竞争力和个人优势
+2. 使用量化数据和具体成果（如有）
+3. 语言简洁有力，避免空洞的形容词
+4. 控制在 150-250 字之间
+5. 如果有目标职位，请针对该职位突出相关能力
+
+请直接输出优化后的自我介绍，不要包含任何解释或标题。`
+
+  return await callModelAPI(prompt, settings, {
+    temperature: 0.7,
+    maxTokens: 500,
+  })
+}
+
+/**
+ * 优化工作经历描述
+ */
+async function optimizeWorkDescription(
+  content: string,
+  context: { company?: string; position?: string },
+  settings: ModelSettings
+): Promise<string> {
+  const prompt = `作为专业的简历优化专家，请帮我优化以下工作经历描述。
+
+【公司】${context.company || "未知"}
+【职位】${context.position || "未知"}
+【当前描述】
+${content}
+
+【优化要求】
+1. 使用 STAR 法则（情境-任务-行动-结果）组织内容
+2. 每条职责以动词开头（如：负责、主导、优化、推动等）
+3. 尽量添加量化数据（如：提升 30%、节省 50 万等）
+4. 突出个人贡献和工作成果
+5. 使用分点描述，每点 1-2 句话
+6. 总字数控制在 100-200 字
+
+请直接输出优化后的工作描述，不要包含任何解释或标题。`
+
+  return await callModelAPI(prompt, settings, {
+    temperature: 0.7,
+    maxTokens: 600,
+  })
+}
+
+/**
+ * 优化项目描述
+ */
+async function optimizeProjectDescription(
+  content: string,
+  context: { projectName?: string },
+  settings: ModelSettings
+): Promise<string> {
+  const prompt = `作为专业的简历优化专家，请帮我优化以下项目描述。
+
+【项目名称】${context.projectName || "未知"}
+【当前描述】
+${content}
+
+【优化要求】
+1. 清晰说明项目背景和目标
+2. 描述使用的技术栈或方法论
+3. 突出项目的创新点或难点
+4. 量化项目成果和影响（如有）
+5. 控制在 80-150 字
+
+请直接输出优化后的项目描述，不要包含任何解释或标题。`
+
+  return await callModelAPI(prompt, settings, {
+    temperature: 0.7,
+    maxTokens: 400,
+  })
+}
+
+/**
+ * 优化职责描述
+ */
+async function optimizeResponsibilities(
+  content: string,
+  context: { projectName?: string },
+  settings: ModelSettings
+): Promise<string> {
+  const prompt = `作为专业的简历优化专家，请帮我优化以下项目职责描述。
+
+【项目名称】${context.projectName || "未知"}
+【当前职责描述】
+${content}
+
+【优化要求】
+1. 使用动词开头描述每项职责
+2. 突出个人在项目中的角色和贡献
+3. 强调解决的问题和达成的成果
+4. 使用分点描述，条理清晰
+5. 控制在 80-150 字
+
+请直接输出优化后的职责描述，不要包含任何解释或标题。`
+
+  return await callModelAPI(prompt, settings, {
+    temperature: 0.7,
+    maxTokens: 400,
+  })
+}
+
+/**
+ * 一键优化整份简历
+ */
+export async function optimizeEntireResume(
+  resumeData: any,
+  settings: ModelSettings,
+  onProgress: (progress: {
+    current: number
+    total: number
+    currentTask: string
+    status: "processing" | "completed" | "error"
+    optimizedContent?: string
+    error?: string
+  }) => void = () => {}
+): Promise<any> {
+  // 深拷贝简历数据
+  const optimizedData = JSON.parse(JSON.stringify(resumeData))
+  const targetPosition = resumeData.jobExpectation?.expectedPosition || ""
+  const targetIndustry = resumeData.jobExpectation?.expectedIndustry || ""
+
+  // 定义需要优化的内容及其顺序
+  const optimizationTasks: Array<{
+    type: string
+    name: string
+    index?: number
+    key?: string
+    currentValue: string
+    context?: Record<string, string>
+  }> = []
+
+  // 1. 优化自我介绍
+  if (resumeData.selfIntro && resumeData.selfIntro.trim()) {
+    optimizationTasks.push({
+      type: "self-intro",
+      name: "自我介绍",
+      currentValue: resumeData.selfIntro,
+    })
+  }
+
+  // 2. 优化工作经历描述
+  if (resumeData.workExperience && resumeData.workExperience.length > 0) {
+    resumeData.workExperience.forEach(
+      (work: any, index: number) => {
+        if (work.description && work.description.trim()) {
+          optimizationTasks.push({
+            type: "work-description",
+            name: `工作经历 ${index + 1} - ${work.company || ""}`,
+            index: index,
+            key: "description",
+            currentValue: work.description,
+            context: {
+              company: work.company || "",
+              position: work.position || "",
+            },
+          })
+        }
+      }
+    )
+  }
+
+  // 3. 优化项目经历描述
+  if (resumeData.projects && resumeData.projects.length > 0) {
+    resumeData.projects.forEach((project: any, index: number) => {
+      const projectName = project.projectName || `项目 ${index + 1}`
+
+      if (project.projectDesc && project.projectDesc.trim()) {
+        optimizationTasks.push({
+          type: "project-desc",
+          name: `项目描述 - ${projectName}`,
+          index: index,
+          key: "projectDesc",
+          currentValue: project.projectDesc,
+          context: { projectName },
+        })
+      }
+
+      if (project.responsibilities && project.responsibilities.trim()) {
+        optimizationTasks.push({
+          type: "project-responsibilities",
+          name: `项目职责 - ${projectName}`,
+          index: index,
+          key: "responsibilities",
+          currentValue: project.responsibilities,
+          context: { projectName },
+        })
+      }
+    })
+  }
+
+  if (optimizationTasks.length === 0) {
+    throw new Error("没有找到可优化的内容，请先填写简历的描述性内容")
+  }
+
+  const totalTasks = optimizationTasks.length
+  let completedTasks = 0
+
+  // 逐个优化
+  for (const task of optimizationTasks) {
+    onProgress({
+      current: completedTasks,
+      total: totalTasks,
+      currentTask: task.name,
+      status: "processing",
+    })
+
+    try {
+      let optimizedContent = ""
+
+      if (task.type === "self-intro") {
+        optimizedContent = await optimizeSelfIntro(
+          task.currentValue,
+          targetPosition,
+          targetIndustry,
+          settings
+        )
+        if (optimizedContent) {
+          optimizedData.selfIntro = optimizedContent
+        }
+      } else if (task.type === "work-description") {
+        optimizedContent = await optimizeWorkDescription(
+          task.currentValue,
+          task.context || {},
+          settings
+        )
+        if (
+          optimizedContent &&
+          optimizedData.workExperience[task.index!] &&
+          task.key
+        ) {
+          optimizedData.workExperience[task.index!][task.key] =
+            optimizedContent
+        }
+      } else if (task.type === "project-desc") {
+        optimizedContent = await optimizeProjectDescription(
+          task.currentValue,
+          task.context || {},
+          settings
+        )
+        if (
+          optimizedContent &&
+          optimizedData.projects[task.index!] &&
+          task.key
+        ) {
+          optimizedData.projects[task.index!][task.key] = optimizedContent
+        }
+      } else if (task.type === "project-responsibilities") {
+        optimizedContent = await optimizeResponsibilities(
+          task.currentValue,
+          task.context || {},
+          settings
+        )
+        if (
+          optimizedContent &&
+          optimizedData.projects[task.index!] &&
+          task.key
+        ) {
+          optimizedData.projects[task.index!][task.key] = optimizedContent
+        }
+      }
+
+      completedTasks++
+      onProgress({
+        current: completedTasks,
+        total: totalTasks,
+        currentTask: task.name,
+        status: "completed",
+        optimizedContent: optimizedContent,
+      })
+
+      // 添加延迟，避免 API 请求过于频繁
+      if (completedTasks < totalTasks) {
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
+    } catch (error) {
+      console.error(`优化 ${task.name} 失败:`, error)
+      completedTasks++
+      onProgress({
+        current: completedTasks,
+        total: totalTasks,
+        currentTask: task.name,
+        status: "error",
+        error: error instanceof Error ? error.message : "优化失败",
+      })
+    }
+  }
+
+  return optimizedData
+}
+

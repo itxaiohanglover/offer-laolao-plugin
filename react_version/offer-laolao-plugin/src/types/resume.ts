@@ -133,3 +133,31 @@ export const defaultResumeData: ResumeData = {
   customFields: [],
 }
 
+/**
+ * AI优化进度信息
+ */
+export interface OptimizeProgress {
+  current: number
+  total: number
+  currentTask: string
+  status: "processing" | "completed" | "error"
+  optimizedContent?: string
+  error?: string
+}
+
+/**
+ * AI优化任务
+ */
+export interface OptimizeTask {
+  type:
+    | "self-intro"
+    | "work-description"
+    | "project-desc"
+    | "project-responsibilities"
+  name: string
+  index?: number
+  key?: string
+  currentValue: string
+  context?: Record<string, string>
+}
+
