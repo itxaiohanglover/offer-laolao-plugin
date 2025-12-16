@@ -1,15 +1,22 @@
-import React, { useState, useCallback } from "react"
+import React, { useCallback, useState } from "react"
+
+import { Button } from "~components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~components/ui/tabs"
+import { ExportDialog } from "~features/popup/ExportDialog"
 import { ResumeForm } from "~features/popup/ResumeForm"
 import { ResumeUpload } from "~features/popup/ResumeUpload"
-import { ExportDialog } from "~features/popup/ExportDialog"
-import { ModelSettingsForm, ParseSettingsForm, UISettingsForm } from "~features/popup/settings"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "~components/ui/tabs"
-import { Button } from "~components/ui/button"
-import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
-import { defaultResumeData, type ResumeData } from "~types/resume"
+import {
+  ModelSettingsForm,
+  ParseSettingsForm,
+  UISettingsForm
+} from "~features/popup/settings"
+import { STORAGE_KEYS, useStorage } from "~hooks/useStorage"
 import type { ParsedResumeData } from "~services/resume-parse"
+import { defaultResumeData, type ResumeData } from "~types/resume"
 
 import "~style.css"
+
+import iconUrl from "data-base64:~assets/icon.png"
 
 /**
  * 将解析后的数据转换为存储格式
@@ -24,7 +31,8 @@ function convertParsedDataToResumeData(
   if (parsedData.personalInfo) {
     result.personalInfo = {
       name: parsedData.personalInfo.name || existingData.personalInfo.name,
-      gender: parsedData.personalInfo.gender || existingData.personalInfo.gender,
+      gender:
+        parsedData.personalInfo.gender || existingData.personalInfo.gender,
       birthDate: existingData.personalInfo.birthDate, // 解析数据中通常没有出生日期
       phone: parsedData.personalInfo.phone || existingData.personalInfo.phone,
       email: parsedData.personalInfo.email || existingData.personalInfo.email,
@@ -32,7 +40,7 @@ function convertParsedDataToResumeData(
       location: existingData.personalInfo.location,
       politicalStatus:
         parsedData.personalInfo["political-status"] ||
-        existingData.personalInfo.politicalStatus,
+        existingData.personalInfo.politicalStatus
     }
 
     // 求职期望
@@ -49,7 +57,7 @@ function convertParsedDataToResumeData(
         existingData.jobExpectation.expectedSalary,
       expectedLocation:
         parsedData.personalInfo["expected-location"] ||
-        existingData.jobExpectation.expectedLocation,
+        existingData.jobExpectation.expectedLocation
     }
 
     // 自我介绍
@@ -66,7 +74,7 @@ function convertParsedDataToResumeData(
       degree: edu[`education[${index}][degree]`] || "",
       rank: edu[`education[${index}][rank]`] || "",
       startDate: edu[`education[${index}][start-date]`] || "",
-      endDate: edu[`education[${index}][end-date]`] || "",
+      endDate: edu[`education[${index}][end-date]`] || ""
     }))
   }
 
@@ -77,7 +85,7 @@ function convertParsedDataToResumeData(
       position: work[`internship[${index}][position]`] || "",
       startDate: work[`internship[${index}][start-date]`] || "",
       endDate: work[`internship[${index}][end-date]`] || "",
-      description: work[`internship[${index}][description]`] || "",
+      description: work[`internship[${index}][description]`] || ""
     }))
   }
 
@@ -88,7 +96,7 @@ function convertParsedDataToResumeData(
       role: proj[`project[${index}][role]`] || "",
       projectTime: proj[`project[${index}][project-time]`] || "",
       projectDesc: proj[`project[${index}][project-desc]`] || "",
-      responsibilities: proj[`project[${index}][responsibilities]`] || "",
+      responsibilities: proj[`project[${index}][responsibilities]`] || ""
     }))
   }
 
@@ -96,7 +104,7 @@ function convertParsedDataToResumeData(
   if (parsedData.skills && parsedData.skills.length > 0) {
     result.skills = parsedData.skills.map((skill, index) => ({
       name: skill[`skills[${index}][name]`] || "",
-      level: skill[`skills[${index}][level]`] || "",
+      level: skill[`skills[${index}][level]`] || ""
     }))
   }
 
@@ -105,7 +113,7 @@ function convertParsedDataToResumeData(
     result.languages = parsedData.languages.map((lang, index) => ({
       name: lang[`language[${index}][name]`] || "",
       proficiency: lang[`language[${index}][proficiency]`] || "",
-      certificate: lang[`language[${index}][certificate]`] || "",
+      certificate: lang[`language[${index}][certificate]`] || ""
     }))
   }
 
@@ -127,7 +135,10 @@ function IndexPopup() {
   // 处理解析数据填充
   const handleParsedData = useCallback(
     (parsedData: ParsedResumeData) => {
-      const newResumeData = convertParsedDataToResumeData(parsedData, resumeData)
+      const newResumeData = convertParsedDataToResumeData(
+        parsedData,
+        resumeData
+      )
       setResumeData(newResumeData)
       setFillMessage("✓ 数据已填充到表单")
       setTimeout(() => setFillMessage(""), 3000)
@@ -153,9 +164,12 @@ function IndexPopup() {
       {/* Header */}
       <div className="plasmo-bg-gradient-to-r plasmo-from-primary plasmo-to-purple-600 plasmo-p-4">
         <div className="plasmo-flex plasmo-items-center plasmo-gap-3">
-          <div className="plasmo-w-10 plasmo-h-10 plasmo-bg-white/20 plasmo-rounded-lg plasmo-flex plasmo-items-center plasmo-justify-center">
-            <span className="plasmo-text-2xl">🎯</span>
-          </div>
+          <img
+            src={iconUrl}
+            alt="Offer 捞捞"
+            className="plasmo-w-10 plasmo-h-10 plasmo-bg-white/20 plasmo-rounded-lg plasmo-flex plasmo-items-center plasmo-justify-center"
+          />
+
           <div>
             <h1 className="plasmo-text-lg plasmo-font-bold plasmo-text-white">
               Offer 捞捞
@@ -199,8 +213,7 @@ function IndexPopup() {
                 <Button
                   onClick={() => setIsExportDialogOpen(true)}
                   variant="outline"
-                  className="plasmo-w-full"
-                >
+                  className="plasmo-w-full">
                   📥 导出简历
                 </Button>
               </div>
@@ -229,8 +242,7 @@ function IndexPopup() {
               <div className="plasmo-pt-2">
                 <Button
                   onClick={handleSaveSettings}
-                  className="plasmo-w-full plasmo-bg-primary hover:plasmo-bg-primary/90"
-                >
+                  className="plasmo-w-full plasmo-bg-primary hover:plasmo-bg-primary/90">
                   💾 保存设置
                 </Button>
                 {saveMessage && (

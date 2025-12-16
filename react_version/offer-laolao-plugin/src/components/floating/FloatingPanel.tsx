@@ -14,6 +14,7 @@ import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
 import { defaultResumeData, type ResumeData } from "~types/resume"
 import { defaultUISettings, type UISettings, type FloatingPosition } from "~types/settings"
 import type { ParsedResumeData } from "~services/resume-parse"
+import iconUrl from "data-base64:~/assets/icon.png"
 
 interface FloatingPanelProps {
   onClose: () => void
@@ -282,9 +283,11 @@ export function FloatingPanel({ onClose }: FloatingPanelProps) {
       >
         <div className="plasmo-flex plasmo-items-center plasmo-justify-between">
           <div className="plasmo-flex plasmo-items-center plasmo-gap-2">
-            <div className="plasmo-w-8 plasmo-h-8 plasmo-bg-white/20 plasmo-rounded-lg plasmo-flex plasmo-items-center plasmo-justify-center">
-              <span className="plasmo-text-lg">🎯</span>
-            </div>
+            <img
+              src={iconUrl}
+              alt="Offer 捞捞"
+              className="plasmo-w-10 plasmo-h-10 plasmo-bg-white/20 plasmo-rounded-lg plasmo-flex plasmo-items-center plasmo-justify-center"
+            />
             <div>
               <h1 className="plasmo-text-sm plasmo-font-bold plasmo-text-white">
                 Offer 捞捞
