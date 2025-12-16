@@ -1,0 +1,7 @@
+dist/
+node_modules/
+build/
+
+./react_version/offer-laolao-plugin/dist
+./react_version/offer-laolao-plugin/node_modules
+./react_version/offer-laolao-plugin/build
