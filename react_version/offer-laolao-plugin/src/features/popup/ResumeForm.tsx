@@ -103,26 +103,26 @@ function DynamicListItem<T extends Record<string, any>>({
       case "select":
         return (
           <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
-            <Select
-              value={value || "empty"}
-              onValueChange={(v) =>
-                onChange(index, field.name, v === "empty" ? "" : v)
-              }
-            >
+          <Select
+            value={value || "empty"}
+            onValueChange={(v) =>
+              onChange(index, field.name, v === "empty" ? "" : v)
+            }
+          >
               <SelectTrigger className="plasmo-flex-1">
-                <SelectValue placeholder={field.placeholder} />
-              </SelectTrigger>
-              <SelectContent>
-                {field.options?.map((option) => (
-                  <SelectItem
-                    key={option.value || "empty"}
-                    value={option.value || "empty"}
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <SelectValue placeholder={field.placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options?.map((option) => (
+                <SelectItem
+                  key={option.value || "empty"}
+                  value={option.value || "empty"}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
             <FieldFillButton
               fieldId={fieldId}
               fieldLabel={fieldLabel}
@@ -139,11 +139,11 @@ function DynamicListItem<T extends Record<string, any>>({
         return (
           <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
             <div className="plasmo-flex-1">
-              <DatePicker
-                value={value}
-                onChange={(v) => onChange(index, field.name, v)}
-                placeholder={field.placeholder || "选择日期"}
-              />
+          <DatePicker
+            value={value}
+            onChange={(v) => onChange(index, field.name, v)}
+            placeholder={field.placeholder || "选择日期"}
+          />
             </div>
             <FieldFillButton
               fieldId={fieldId}
@@ -156,12 +156,12 @@ function DynamicListItem<T extends Record<string, any>>({
       case "textarea":
         return (
           <div className="plasmo-flex plasmo-items-start plasmo-gap-1.5">
-            <textarea
-              value={value}
-              onChange={(e) => onChange(index, field.name, e.target.value)}
-              placeholder={field.placeholder}
+          <textarea
+            value={value}
+            onChange={(e) => onChange(index, field.name, e.target.value)}
+            placeholder={field.placeholder}
               className="plasmo-flex-1 plasmo-min-h-[60px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
-            />
+          />
             <FieldFillButton
               fieldId={fieldId}
               fieldLabel={fieldLabel}
@@ -173,17 +173,17 @@ function DynamicListItem<T extends Record<string, any>>({
       default:
         return (
           <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
-            <Input
-              value={value}
-              onChange={(e) => onChange(index, field.name, e.target.value)}
-              placeholder={field.placeholder}
+          <Input
+            value={value}
+            onChange={(e) => onChange(index, field.name, e.target.value)}
+            placeholder={field.placeholder}
               className="plasmo-flex-1"
             />
             <FieldFillButton
               fieldId={fieldId}
               fieldLabel={fieldLabel}
               getValue={() => value}
-            />
+          />
           </div>
         )
     }
@@ -235,6 +235,9 @@ export function ResumeForm() {
 
   // 优化对话框状态
   const [isOptimizeDialogOpen, setIsOptimizeDialogOpen] = useState(false)
+
+  // 重置消息状态
+  const [resetMessage, setResetMessage] = useState("")
 
   // 从存储加载数据 - 与默认值合并以确保所有字段存在
   useEffect(() => {
@@ -300,6 +303,16 @@ export function ResumeForm() {
     setFormData(optimizedData)
     setIsDirty(true)
     setIsOptimizeDialogOpen(false)
+  }, [])
+
+  // 重置简历数据
+  const handleReset = useCallback(() => {
+    if (window.confirm("确定要重置所有简历数据吗？此操作不可恢复。")) {
+      setFormData(defaultResumeData)
+      setIsDirty(true)
+      setResetMessage("✓ 简历数据已重置")
+      setTimeout(() => setResetMessage(""), 3000)
+    }
   }, [])
 
   // 通用动态列表更新函数
@@ -386,24 +399,24 @@ export function ResumeForm() {
       case "select":
         return (
           <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
-            <Select
-              value={value || "empty"}
-              onValueChange={(v) => onChange(v === "empty" ? "" : v)}
-            >
+          <Select
+            value={value || "empty"}
+            onValueChange={(v) => onChange(v === "empty" ? "" : v)}
+          >
               <SelectTrigger className="plasmo-flex-1">
-                <SelectValue placeholder={field.placeholder} />
-              </SelectTrigger>
-              <SelectContent>
-                {field.options?.map((option) => (
-                  <SelectItem
-                    key={option.value || "empty"}
-                    value={option.value || "empty"}
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <SelectValue placeholder={field.placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options?.map((option) => (
+                <SelectItem
+                  key={option.value || "empty"}
+                  value={option.value || "empty"}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
             <FieldFillButton
               fieldId={fieldId}
               fieldLabel={fieldLabel}
@@ -419,11 +432,11 @@ export function ResumeForm() {
         return (
           <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
             <div className="plasmo-flex-1">
-              <DatePicker
-                value={value}
-                onChange={onChange}
-                placeholder={field.placeholder || "选择日期"}
-              />
+          <DatePicker
+            value={value}
+            onChange={onChange}
+            placeholder={field.placeholder || "选择日期"}
+          />
             </div>
             <FieldFillButton
               fieldId={fieldId}
@@ -436,12 +449,12 @@ export function ResumeForm() {
       case "textarea":
         return (
           <div className="plasmo-flex plasmo-items-start plasmo-gap-1.5">
-            <textarea
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder={field.placeholder}
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={field.placeholder}
               className="plasmo-flex-1 plasmo-min-h-[80px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
-            />
+          />
             <FieldFillButton
               fieldId={fieldId}
               fieldLabel={fieldLabel}
@@ -453,18 +466,18 @@ export function ResumeForm() {
       default:
         return (
           <div className="plasmo-flex plasmo-items-center plasmo-gap-1.5">
-            <Input
-              type={field.type}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder={field.placeholder}
+          <Input
+            type={field.type}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={field.placeholder}
               className="plasmo-flex-1"
             />
             <FieldFillButton
               fieldId={fieldId}
               fieldLabel={fieldLabel}
               getValue={() => value}
-            />
+          />
           </div>
         )
     }
@@ -520,12 +533,12 @@ export function ResumeForm() {
       {/* 自我介绍 */}
       <FormSection title="自我介绍" icon="📝" defaultOpen={false}>
         <div className="plasmo-flex plasmo-items-start plasmo-gap-1.5">
-          <textarea
-            value={formData.selfIntro}
-            onChange={(e) => updateSelfIntro(e.target.value)}
-            placeholder="请输入自我介绍..."
+        <textarea
+          value={formData.selfIntro}
+          onChange={(e) => updateSelfIntro(e.target.value)}
+          placeholder="请输入自我介绍..."
             className="plasmo-flex-1 plasmo-min-h-[100px] plasmo-px-3 plasmo-py-2 plasmo-text-sm plasmo-border plasmo-border-input plasmo-rounded-md plasmo-bg-background plasmo-resize-y focus:plasmo-outline-none focus:plasmo-ring-2 focus:plasmo-ring-ring"
-          />
+        />
           <FieldFillButton
             fieldId="self-intro"
             fieldLabel="自我介绍"
@@ -696,15 +709,30 @@ export function ResumeForm() {
         </div>
       </FormSection>
 
-      {/* AI 一键优化按钮 */}
-      <div className="plasmo-pt-2">
-        <Button
-          type="button"
-          onClick={() => setIsOptimizeDialogOpen(true)}
-          className="plasmo-w-full plasmo-bg-gradient-to-r plasmo-from-purple-600 plasmo-to-blue-600 hover:plasmo-from-purple-700 hover:plasmo-to-blue-700"
-        >
-          ✨ AI 一键优化简历
-        </Button>
+      {/* 操作按钮区域 */}
+      <div className="plasmo-pt-2 plasmo-space-y-2">
+        <div className="plasmo-flex plasmo-gap-2">
+          <Button
+            type="button"
+            onClick={() => setIsOptimizeDialogOpen(true)}
+            className="plasmo-flex-1 plasmo-bg-gradient-to-r plasmo-from-purple-600 plasmo-to-blue-600 hover:plasmo-from-purple-700 hover:plasmo-to-blue-700"
+          >
+            ✨ AI 一键优化简历
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleReset}
+            className="plasmo-px-4"
+          >
+            🗑️ 重置
+          </Button>
+        </div>
+        {resetMessage && (
+          <p className="plasmo-text-center plasmo-text-sm plasmo-text-green-600">
+            {resetMessage}
+          </p>
+        )}
       </div>
 
       {/* 优化对话框 */}
