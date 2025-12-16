@@ -94,5 +94,6 @@ export const STORAGE_KEYS = {
   RESUME_DATA: "resumeData",
   MODEL_SETTINGS: "modelSettings",
   PARSE_SETTINGS: "parseSettings",
+  UI_SETTINGS: "uiSettings",
 } as const
 

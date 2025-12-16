@@ -1,4 +1,9 @@
-import React, { useState, useCallback } from "react"
+/**
+ * 悬浮窗面板组件
+ * 可拖拽、可最小化、可关闭
+ */
+
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { ResumeForm } from "~features/popup/ResumeForm"
 import { ResumeUpload } from "~features/popup/ResumeUpload"
 import { ExportDialog } from "~features/popup/ExportDialog"
@@ -7,9 +12,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "~components/ui/tabs"
 import { Button } from "~components/ui/button"
 import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
 import { defaultResumeData, type ResumeData } from "~types/resume"
+import { defaultUISettings, type UISettings, type FloatingPosition } from "~types/settings"
 import type { ParsedResumeData } from "~services/resume-parse"
 
-import "~style.css"
+interface FloatingPanelProps {
+  onClose: () => void
+}
 
 /**
  * 将解析后的数据转换为存储格式
@@ -20,12 +28,11 @@ function convertParsedDataToResumeData(
 ): ResumeData {
   const result = { ...existingData }
 
-  // 转换个人信息
   if (parsedData.personalInfo) {
     result.personalInfo = {
       name: parsedData.personalInfo.name || existingData.personalInfo.name,
       gender: parsedData.personalInfo.gender || existingData.personalInfo.gender,
-      birthDate: existingData.personalInfo.birthDate, // 解析数据中通常没有出生日期
+      birthDate: existingData.personalInfo.birthDate,
       phone: parsedData.personalInfo.phone || existingData.personalInfo.phone,
       email: parsedData.personalInfo.email || existingData.personalInfo.email,
       idCard: existingData.personalInfo.idCard,
@@ -35,7 +42,6 @@ function convertParsedDataToResumeData(
         existingData.personalInfo.politicalStatus,
     }
 
-    // 求职期望
     result.jobExpectation = {
       ...existingData.jobExpectation,
       expectedPosition:
@@ -52,13 +58,11 @@ function convertParsedDataToResumeData(
         existingData.jobExpectation.expectedLocation,
     }
 
-    // 自我介绍
     if (parsedData.personalInfo["self-intro"]) {
       result.selfIntro = parsedData.personalInfo["self-intro"]
     }
   }
 
-  // 转换教育经历
   if (parsedData.education && parsedData.education.length > 0) {
     result.education = parsedData.education.map((edu, index) => ({
       school: edu[`education[${index}][school]`] || "",
@@ -70,7 +74,6 @@ function convertParsedDataToResumeData(
     }))
   }
 
-  // 转换工作/实习经历
   if (parsedData.workExperience && parsedData.workExperience.length > 0) {
     result.workExperience = parsedData.workExperience.map((work, index) => ({
       company: work[`internship[${index}][company]`] || "",
@@ -81,7 +84,6 @@ function convertParsedDataToResumeData(
     }))
   }
 
-  // 转换项目经历
   if (parsedData.projects && parsedData.projects.length > 0) {
     result.projects = parsedData.projects.map((proj, index) => ({
       projectName: proj[`project[${index}][project-name]`] || "",
@@ -92,7 +94,6 @@ function convertParsedDataToResumeData(
     }))
   }
 
-  // 转换技能
   if (parsedData.skills && parsedData.skills.length > 0) {
     result.skills = parsedData.skills.map((skill, index) => ({
       name: skill[`skills[${index}][name]`] || "",
@@ -100,7 +101,6 @@ function convertParsedDataToResumeData(
     }))
   }
 
-  // 转换语言能力
   if (parsedData.languages && parsedData.languages.length > 0) {
     result.languages = parsedData.languages.map((lang, index) => ({
       name: lang[`language[${index}][name]`] || "",
@@ -112,17 +112,88 @@ function convertParsedDataToResumeData(
   return result
 }
 
-function IndexPopup() {
+export function FloatingPanel({ onClose }: FloatingPanelProps) {
   const [activeTab, setActiveTab] = useState("resume")
   const [saveMessage, setSaveMessage] = useState("")
   const [fillMessage, setFillMessage] = useState("")
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
+
+  // 拖拽相关状态
+  const [position, setPosition] = useState<FloatingPosition>({ x: 20, y: 20 })
+  const [isDragging, setIsDragging] = useState(false)
+  const dragOffset = useRef({ x: 0, y: 0 })
+  const panelRef = useRef<HTMLDivElement>(null)
 
   // 简历数据存储
   const [resumeData, setResumeData] = useStorage<ResumeData>(
     STORAGE_KEYS.RESUME_DATA,
     defaultResumeData
   )
+
+  // UI 设置存储
+  const [uiSettings, setUISettings] = useStorage<UISettings>(
+    STORAGE_KEYS.UI_SETTINGS,
+    defaultUISettings
+  )
+
+  // 从存储加载位置
+  useEffect(() => {
+    if (uiSettings.floatingPosition) {
+      setPosition(uiSettings.floatingPosition)
+    }
+    if (uiSettings.floatingMinimized !== undefined) {
+      setIsMinimized(uiSettings.floatingMinimized)
+    }
+  }, [uiSettings])
+
+  // 保存位置到存储
+  const savePosition = useCallback(
+    (newPosition: FloatingPosition) => {
+      setUISettings((prev) => ({
+        ...prev,
+        floatingPosition: newPosition,
+      }))
+    },
+    [setUISettings]
+  )
+
+  // 拖拽开始
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if ((e.target as HTMLElement).closest(".no-drag")) return
+      setIsDragging(true)
+      dragOffset.current = {
+        x: e.clientX - position.x,
+        y: e.clientY - position.y,
+      }
+    },
+    [position]
+  )
+
+  // 拖拽移动
+  useEffect(() => {
+    if (!isDragging) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newX = Math.max(0, Math.min(window.innerWidth - 420, e.clientX - dragOffset.current.x))
+      const newY = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.current.y))
+      setPosition({ x: newX, y: newY })
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+      savePosition(position)
+    }
+
+    document.addEventListener("mousemove", handleMouseMove)
+    document.addEventListener("mouseup", handleMouseUp)
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("mouseup", handleMouseUp)
+    }
+  }, [isDragging, position, savePosition])
 
   // 处理解析数据填充
   const handleParsedData = useCallback(
@@ -141,8 +212,62 @@ function IndexPopup() {
     setTimeout(() => setSaveMessage(""), 2000)
   }
 
+  // 最小化/展开
+  const toggleMinimize = () => {
+    const newMinimized = !isMinimized
+    setIsMinimized(newMinimized)
+    setUISettings((prev) => ({
+      ...prev,
+      floatingMinimized: newMinimized,
+    }))
+  }
+
+  // 最小化状态
+  if (isMinimized) {
+    return (
+      <div
+        ref={panelRef}
+        style={{
+          position: "fixed",
+          left: position.x,
+          top: position.y,
+          zIndex: 2147483647,
+        }}
+        className="plasmo-bg-gradient-to-r plasmo-from-primary plasmo-to-purple-600 plasmo-rounded-full plasmo-shadow-2xl plasmo-cursor-move"
+        onMouseDown={handleMouseDown}
+      >
+        <div className="plasmo-flex plasmo-items-center plasmo-gap-2 plasmo-p-3">
+          <span className="plasmo-text-xl">🎯</span>
+          <button
+            onClick={toggleMinimize}
+            className="no-drag plasmo-text-white hover:plasmo-bg-white/20 plasmo-rounded plasmo-p-1 plasmo-transition-colors"
+            title="展开"
+          >
+            ▢
+          </button>
+          <button
+            onClick={onClose}
+            className="no-drag plasmo-text-white hover:plasmo-bg-white/20 plasmo-rounded plasmo-p-1 plasmo-transition-colors"
+            title="关闭"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="plasmo-w-[400px] plasmo-min-h-[500px] plasmo-max-h-[600px] plasmo-overflow-auto plasmo-bg-background">
+    <div
+      ref={panelRef}
+      style={{
+        position: "fixed",
+        left: position.x,
+        top: position.y,
+        zIndex: 2147483647,
+      }}
+      className="plasmo-w-[400px] plasmo-max-h-[600px] plasmo-bg-background plasmo-rounded-lg plasmo-shadow-2xl plasmo-border plasmo-border-border plasmo-overflow-hidden"
+    >
       {/* 导出对话框 */}
       <ExportDialog
         isOpen={isExportDialogOpen}
@@ -150,25 +275,44 @@ function IndexPopup() {
         resumeData={resumeData}
       />
 
-      {/* Header */}
-      <div className="plasmo-bg-gradient-to-r plasmo-from-primary plasmo-to-purple-600 plasmo-p-4">
-        <div className="plasmo-flex plasmo-items-center plasmo-gap-3">
-          <div className="plasmo-w-10 plasmo-h-10 plasmo-bg-white/20 plasmo-rounded-lg plasmo-flex plasmo-items-center plasmo-justify-center">
-            <span className="plasmo-text-2xl">🎯</span>
+      {/* 可拖拽的标题栏 */}
+      <div
+        className="plasmo-bg-gradient-to-r plasmo-from-primary plasmo-to-purple-600 plasmo-p-3 plasmo-cursor-move plasmo-select-none"
+        onMouseDown={handleMouseDown}
+      >
+        <div className="plasmo-flex plasmo-items-center plasmo-justify-between">
+          <div className="plasmo-flex plasmo-items-center plasmo-gap-2">
+            <div className="plasmo-w-8 plasmo-h-8 plasmo-bg-white/20 plasmo-rounded-lg plasmo-flex plasmo-items-center plasmo-justify-center">
+              <span className="plasmo-text-lg">🎯</span>
+            </div>
+            <div>
+              <h1 className="plasmo-text-sm plasmo-font-bold plasmo-text-white">
+                Offer 捞捞
+              </h1>
+              <p className="plasmo-text-xs plasmo-text-white/70">悬浮模式</p>
+            </div>
           </div>
-          <div>
-            <h1 className="plasmo-text-lg plasmo-font-bold plasmo-text-white">
-              Offer 捞捞
-            </h1>
-            <p className="plasmo-text-xs plasmo-text-white/80">
-              简历自动填写助手
-            </p>
+          <div className="plasmo-flex plasmo-items-center plasmo-gap-1">
+            <button
+              onClick={toggleMinimize}
+              className="no-drag plasmo-text-white hover:plasmo-bg-white/20 plasmo-rounded plasmo-p-1.5 plasmo-transition-colors"
+              title="最小化"
+            >
+              ─
+            </button>
+            <button
+              onClick={onClose}
+              className="no-drag plasmo-text-white hover:plasmo-bg-white/20 plasmo-rounded plasmo-p-1.5 plasmo-transition-colors"
+              title="关闭"
+            >
+              ✕
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Mode Tabs */}
-      <div className="plasmo-px-4 plasmo-pt-4">
+      {/* 内容区域 */}
+      <div className="plasmo-px-3 plasmo-pt-3 plasmo-overflow-auto plasmo-max-h-[520px]">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="resume">📝 简历填写</TabsTrigger>
@@ -240,33 +384,11 @@ function IndexPopup() {
                 )}
               </div>
 
-              {/* 使用说明 */}
-              <div className="plasmo-mt-6 plasmo-p-4 plasmo-bg-muted/30 plasmo-rounded-lg">
-                <h4 className="plasmo-text-sm plasmo-font-medium plasmo-mb-3">
-                  📖 使用说明
-                </h4>
-                <ul className="plasmo-text-xs plasmo-text-muted-foreground plasmo-space-y-2">
-                  <li className="plasmo-flex plasmo-gap-2">
-                    <span className="plasmo-text-primary">1.</span>
-                    填写简历信息，系统会<strong>自动保存</strong>您的输入
-                  </li>
-                  <li className="plasmo-flex plasmo-gap-2">
-                    <span className="plasmo-text-primary">2.</span>
-                    切换到目标网站页面，点击"预填"快速填充表单
-                  </li>
-                  <li className="plasmo-flex plasmo-gap-2">
-                    <span className="plasmo-text-primary">3.</span>
-                    配置"简历解析 API"以启用智能简历解析功能
-                  </li>
-                  <li className="plasmo-flex plasmo-gap-2">
-                    <span className="plasmo-text-primary">4.</span>
-                    配置"AI 模型"以启用简历内容优化功能（可选）
-                  </li>
-                  <li className="plasmo-flex plasmo-gap-2">
-                    <span className="plasmo-text-primary">5.</span>
-                    设置会自动保存，无需手动点击保存按钮
-                  </li>
-                </ul>
+              {/* 提示 */}
+              <div className="plasmo-mt-4 plasmo-p-3 plasmo-bg-muted/30 plasmo-rounded-lg">
+                <p className="plasmo-text-xs plasmo-text-muted-foreground">
+                  💡 提示：如需切换回弹窗模式，请在设置页面更改界面模式
+                </p>
               </div>
             </div>
           </TabsContent>
@@ -276,4 +398,3 @@ function IndexPopup() {
   )
 }
 
-export default IndexPopup

@@ -15,6 +15,32 @@ interface FillResult {
 }
 
 /**
+ * 检测当前是否运行在 content script 环境中
+ */
+function isContentScriptContext(): boolean {
+  // Content script 中没有 chrome.tabs API
+  return typeof chrome !== "undefined" && 
+         typeof chrome.runtime !== "undefined" && 
+         (!chrome.tabs || typeof chrome.tabs.query !== "function")
+}
+
+/**
+ * 在 content script 中直接启动字段填充模式
+ */
+function startFieldFillModeDirectly(payload: FieldFillPayload): FillResult {
+  // 触发自定义事件，让 content script 处理
+  const event = new CustomEvent("offerlaolao:startFieldFillMode", {
+    detail: payload
+  })
+  window.dispatchEvent(event)
+  
+  return {
+    success: true,
+    message: `请在网页中点击要填入「${payload.fieldLabel}」的位置`
+  }
+}
+
+/**
  * 启动单字段填充流程
  */
 export async function startSingleFieldFill(
@@ -30,7 +56,19 @@ export async function startSingleFieldFill(
     }
   }
 
-  // 检查 Chrome API 是否可用
+  const payload: FieldFillPayload = {
+    fieldId,
+    fieldLabel,
+    value: fieldValue
+  }
+
+  // 如果在 content script 环境中（悬浮窗模式），直接调用本地函数
+  if (isContentScriptContext()) {
+    console.log("Running in content script context, using direct method")
+    return startFieldFillModeDirectly(payload)
+  }
+
+  // 检查 Chrome API 是否可用（popup 模式）
   if (typeof chrome === "undefined" || !chrome.tabs) {
     return {
       success: false,
@@ -67,12 +105,6 @@ export async function startSingleFieldFill(
       }
     }
 
-    const payload: FieldFillPayload = {
-      fieldId,
-      fieldLabel,
-      value: fieldValue
-    }
-
     console.log("Starting field fill for:", {
       fieldId,
       fieldLabel,
@@ -84,16 +116,12 @@ export async function startSingleFieldFill(
     const pingResult = await pingContentScript(tabId)
 
     if (!pingResult) {
-      // Content script 未加载，尝试注入
-      const injected = await injectContentScript(tabId)
-      if (!injected) {
-        return {
-          success: false,
-          message: "无法注入脚本，请刷新页面后重试"
-        }
+      // Plasmo 框架通过 manifest 自动注入 content script（文件名带动态哈希）
+      // 如果 ping 失败，说明页面需要刷新才能加载 content script
+      return {
+        success: false,
+        message: "页面脚本未就绪，请刷新当前网页后重试"
       }
-      // 等待脚本加载
-      await new Promise((resolve) => setTimeout(resolve, 800))
     }
 
     // 发送填充消息
@@ -125,35 +153,6 @@ async function pingContentScript(tabId: number): Promise<boolean> {
     } catch {
       resolve(false)
     }
-  })
-}
-
-/**
- * 注入 content script
- */
-async function injectContentScript(tabId: number): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (!chrome.scripting || !chrome.scripting.executeScript) {
-      console.error("chrome.scripting.executeScript not available")
-      resolve(false)
-      return
-    }
-
-    chrome.scripting.executeScript(
-      {
-        target: { tabId },
-        files: ["contents/content.js"]
-      },
-      (results) => {
-        if (chrome.runtime.lastError) {
-          console.error("Error injecting script:", chrome.runtime.lastError)
-          resolve(false)
-        } else {
-          console.log("Script injected successfully:", results)
-          resolve(true)
-        }
-      }
-    )
   })
 }
 
@@ -197,7 +196,6 @@ async function sendFieldFillMessage(
             console.warn(
               "Message port closed before response, treating as success"
             )
-            schedulePopupClose()
             resolve({
               success: true,
               message: `请在网页中点击要填入「${fieldLabel}」的位置`
@@ -243,8 +241,7 @@ async function sendFieldFillMessage(
         console.log("Field fill message response:", response)
 
         if (response && response.success) {
-          // 成功后关闭 popup
-          schedulePopupClose()
+          // 不再自动关闭 popup，让用户可以连续填充多个字段
           resolve({
             success: true,
             message: `请在网页中点击要填入「${fieldLabel}」的位置`
@@ -260,24 +257,3 @@ async function sendFieldFillMessage(
     )
   })
 }
-
-/**
- * 延迟关闭 popup
- */
-let popupCloseScheduled = false
-
-function schedulePopupClose(): void {
-  if (popupCloseScheduled) return
-  popupCloseScheduled = true
-
-  setTimeout(() => {
-    try {
-      window.close()
-    } catch (error) {
-      console.warn("自动关闭弹窗失败:", error)
-    } finally {
-      popupCloseScheduled = false
-    }
-  }, 400)
-}
-

@@ -41,12 +41,16 @@
   },
   "manifest": {
     "host_permissions": [
-      "https://*/*"
+      "https://*/*",
+      "http://*/*"
     ],
     "permissions": [
       "storage",
       "activeTab",
       "scripting"
-    ]
+    ],
+    "background": {
+      "service_worker": "background.ts"
+    }
   }
 }

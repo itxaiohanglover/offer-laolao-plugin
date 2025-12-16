@@ -82,6 +82,29 @@ export const defaultParseSettings: ParseSettings = {
   appCode: "",
 }
 
+// 界面模式类型
+export type UIMode = "popup" | "floating"
+
+// 悬浮窗位置
+export interface FloatingPosition {
+  x: number
+  y: number
+}
+
+// 界面设置
+export interface UISettings {
+  mode: UIMode
+  floatingPosition: FloatingPosition
+  floatingMinimized: boolean
+}
+
+// 默认界面设置
+export const defaultUISettings: UISettings = {
+  mode: "popup",
+  floatingPosition: { x: 20, y: 20 },
+  floatingMinimized: false,
+}
+
 // API 调用选项
 export interface CallModelOptions {
   systemPrompt?: string

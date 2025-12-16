@@ -1,5 +1,7 @@
 import cssText from "data-text:~style.css"
 import type { PlasmoCSConfig } from "plasmo"
+import { useState, useEffect } from "react"
+import { FloatingPanel } from "~components/floating/FloatingPanel"
 
 export const config: PlasmoCSConfig = {
   matches: ["<all_urls>"]
@@ -36,16 +38,60 @@ let pendingFieldFill: {
 let fieldFillHighlight: HTMLElement | null = null
 let fieldFillTooltip: HTMLDivElement | null = null
 
+// 悬浮窗显示状态（全局）
+let floatingPanelVisible = false
+let setFloatingPanelVisibleCallback: ((visible: boolean) => void) | null = null
+
 // ==========================================
 // 消息监听器
 // ==========================================
 
 console.log("简历自动填写助手 - React Content Script 已加载")
 
+// 监听来自悬浮窗的自定义事件（悬浮窗模式下直接调用）
+window.addEventListener("offerlaolao:startFieldFillMode", ((event: CustomEvent) => {
+  console.log("收到悬浮窗的 startFieldFillMode 事件:", event.detail)
+  try {
+    startFieldFillMode(event.detail)
+  } catch (error) {
+    console.error("启动字段填充模式失败:", error)
+  }
+}) as EventListener)
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // ping 检测 content script 是否已加载
   if (request.action === "ping") {
     sendResponse({ status: "ok" })
+    return true
+  }
+
+  // 切换悬浮窗显示状态
+  if (request.action === "toggleFloatingPanel") {
+    floatingPanelVisible = !floatingPanelVisible
+    if (setFloatingPanelVisibleCallback) {
+      setFloatingPanelVisibleCallback(floatingPanelVisible)
+    }
+    sendResponse({ success: true, visible: floatingPanelVisible })
+    return true
+  }
+
+  // 显示悬浮窗
+  if (request.action === "showFloatingPanel") {
+    floatingPanelVisible = true
+    if (setFloatingPanelVisibleCallback) {
+      setFloatingPanelVisibleCallback(true)
+    }
+    sendResponse({ success: true })
+    return true
+  }
+
+  // 隐藏悬浮窗
+  if (request.action === "hideFloatingPanel") {
+    floatingPanelVisible = false
+    if (setFloatingPanelVisibleCallback) {
+      setFloatingPanelVisibleCallback(false)
+    }
+    sendResponse({ success: true })
     return true
   }
 
@@ -66,6 +112,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   return false
 })
+
+// ==========================================
+// 悬浮窗 UI 组件
+// ==========================================
+
+function ContentUI() {
+  const [isVisible, setIsVisible] = useState(floatingPanelVisible)
+
+  useEffect(() => {
+    // 注册回调函数，用于从消息监听器更新状态
+    setFloatingPanelVisibleCallback = setIsVisible
+    return () => {
+      setFloatingPanelVisibleCallback = null
+    }
+  }, [])
+
+  const handleClose = () => {
+    floatingPanelVisible = false
+    setIsVisible(false)
+  }
+
+  if (!isVisible) {
+    return null
+  }
+
+  return <FloatingPanel onClose={handleClose} />
+}
+
+export default ContentUI
 
 // ==========================================
 // 字段填充模式核心函数
@@ -368,5 +443,3 @@ function hideFieldFillTooltip(): void {
     fieldFillTooltip = null
   }
 }
-
-
