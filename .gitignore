@@ -23,4 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-.DS_Store
+pnpm-lock.yaml
+
+node_modules
+
+.cursor
+
+.cursorignore
