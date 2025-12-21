@@ -83,7 +83,7 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const downloadUrl = '/download/super_resume1512.zip'
+const downloadUrl = '/download/offer-laolao-plugin-latest.zip'
 const handleDownload = () => {
   const link = document.createElement('a')
   link.href = downloadUrl

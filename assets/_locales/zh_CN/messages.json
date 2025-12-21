@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Offer捞捞插件",
+    "description": "扩展名称"
+  },
+  "extensionDescription": {
+    "message": "智能简历自动填充助手 - 支持AI解析简历并一键填充各大招聘网站表单，让求职更高效",
+    "description": "扩展描述"
+  }
+}
+

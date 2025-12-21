@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Offer Laolao Plugin",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Intelligent resume auto-fill assistant - Supports AI resume parsing and one-click form filling on major recruitment websites",
+    "description": "Extension description"
+  }
+}
+

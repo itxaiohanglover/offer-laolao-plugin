@@ -1,5 +1,21 @@
+# ==========================================
+# Dependencies
+# ==========================================
+node_modules/
+.pnp
+.pnp.js
+
+# ==========================================
+# Plasmo Framework Build Output
+# ==========================================
+.plasmo/
+build/
+*.plasmo.zip
+
+# ==========================================
 # Logs
-logs
+# ==========================================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,20 +23,83 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-docs/node_modules
-dist
-dist-ssr
+# ==========================================
+# Environment Variables
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.local
 
-# Editor directories and files
+# ==========================================
+# Build Artifacts
+# ==========================================
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# ==========================================
+# Docs Subproject
+# ==========================================
+docs/node_modules/
+docs/dist/
+docs/.vite/
+docs/package-lock.json
+
+# ==========================================
+# Editor Directories and Files
+# ==========================================
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ==========================================
+# OS Files
+# ==========================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# Windows Files
+# ==========================================
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-.DS_Store
+# ==========================================
+# Temporary Files
+# ==========================================
+*.tmp
+*.temp
+*.cache
+.cache/
+.temp/
+
+# ==========================================
+# Package Files
+# ==========================================
+*.zip
+*.tar.gz
+*.rar
+!docs/public/download/*.zip
