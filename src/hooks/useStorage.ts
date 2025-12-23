@@ -92,6 +92,7 @@ export function useStorage<T>(key: string, defaultValue: T) {
  */
 export const STORAGE_KEYS = {
   RESUME_DATA: "resumeData",
+  RESUME_TEMPLATES: "resumeTemplates",
   MODEL_SETTINGS: "modelSettings",
   PARSE_SETTINGS: "parseSettings",
   UI_SETTINGS: "uiSettings",

@@ -52,7 +52,8 @@ function formatDateForLatex(dateStr: string | undefined | null): string {
 // ============================================
 
 /**
- * 生成 LaTeX 简历文档
+ * 生成 LaTeX 简历文档（使用新模板样式）
+ * 基于 ICBlue 主题，使用 XeLaTeX 编译
  */
 export function generateLatexResume(resumeData: ResumeData): string {
   if (!resumeData || typeof resumeData !== "object") {
@@ -65,7 +66,7 @@ export function generateLatexResume(resumeData: ResumeData): string {
   // 提取个人信息
   const name = escapeLatex(personalInfo.name || "姓名")
   const phone = escapeLatex(personalInfo.phone || "")
-  const email = escapeLatex(personalInfo.email || "")
+  const email = personalInfo.email || ""
   const location = escapeLatex(personalInfo.location || "")
   const gender = escapeLatex(personalInfo.gender || "")
   const politicalStatus = escapeLatex(personalInfo.politicalStatus || "")
@@ -82,132 +83,178 @@ export function generateLatexResume(resumeData: ResumeData): string {
   let latex = `% ============================================
 % 简历 LaTeX 模板
 % 由 Offer 捞捞 - 简历自动填写助手生成
-% 可直接在 Overleaf 上编译使用
+% 使用 XeLaTeX 编译（推荐在 Overleaf 上使用）
 % ============================================
 
-\\documentclass[11pt,a4paper]{article}
+\\documentclass[11pt]{article}
 
+% ============================================
 % 页面设置
-\\usepackage[top=1.5cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
-
-% 中文支持
-\\usepackage[UTF8]{ctex}
-
-% 其他必要的包
-\\usepackage{enumitem}
-\\usepackage{titlesec}
-\\usepackage{xcolor}
-\\usepackage{hyperref}
-\\usepackage{fontawesome5}
-\\usepackage{tabularx}
-\\usepackage{array}
-
-% 颜色定义
-\\definecolor{primary}{RGB}{0, 90, 156}
-\\definecolor{secondary}{RGB}{64, 64, 64}
-\\definecolor{accent}{RGB}{52, 152, 219}
-
-% 超链接设置
-\\hypersetup{
-    colorlinks=true,
-    linkcolor=primary,
-    urlcolor=accent
-}
-
-% 段落设置
+% ============================================
 \\setlength{\\parindent}{0pt}
-\\setlength{\\parskip}{0.5em}
 
-% 节标题格式
-\\titleformat{\\section}{\\Large\\bfseries\\color{primary}}{}{0em}{}[\\titlerule]
-\\titlespacing{\\section}{0pt}{1em}{0.5em}
+\\usepackage{hyperref}
+\\usepackage{url}
+\\hypersetup{hidelinks}
+\\urlstyle{tt}
 
-% 列表设置
-\\setlist[itemize]{leftmargin=1.5em, itemsep=0.2em, topsep=0.3em}
+% tikz 用于页面装饰
+\\usepackage{graphicx}
+\\usepackage{tikz}
+\\usetikzlibrary{calc}
 
+\\RequirePackage{xltxtra}
+\\RequirePackage{xifthen}
+% FontAwesome5 图标
+\\RequirePackage[fixed]{fontawesome5}
+% 颜色
+\\RequirePackage{xcolor}
+\\RequirePackage[super]{nth}
+
+% IC Blue 主题色
+\\definecolor{ICBlue}{RGB}{0,62,116}
+
+\\usepackage{calc}
+
+% 字体设置
+\\usepackage{fontspec}
+\\usepackage{xeCJK}
+\\CJKsetecglue{}
+
+% 使用系统字体（可根据需要修改）
+\\setmainfont{Times New Roman}
+\\setCJKmainfont{SimSun}[BoldFont=黑体-简]
+
+\\usepackage[
+  a4paper,
+  left=1.2cm,
+  right=1.2cm,
+  top=1cm,
+  bottom=1cm,
+  nohead
+]{geometry}
+\\renewcommand{\\baselinestretch}{1.2}
+
+\\usepackage{titlesec}
+\\usepackage{enumitem}
+\\setlist{noitemsep}
+\\setlist[itemize]{topsep=0em, leftmargin=*}
+\\setlist[enumerate]{topsep=0.25em, leftmargin=*}
+
+% 节标题样式
+\\titleformat{\\section}
+  {\\large\\bfseries\\raggedright}
+  {}{0em}
+  {}
+  [{\\color{ICBlue}\\titlerule[1pt]}]
+\\titlespacing*{\\section}{0cm}{*1.6}{*1.2}
+
+\\titleformat{\\subsection}
+  {\\large\\raggedright}
+  {}{0em}
+  {}
+\\titlespacing*{\\subsection}{0cm}{*1}{*0.5}
+
+% ============================================
 % 自定义命令
-\\newcommand{\\resumeSubheading}[4]{
-    \\noindent
-    \\begin{tabularx}{\\textwidth}{@{}X r@{}}
-        \\textbf{#1} & \\textit{#2} \\\\
-        \\textit{#3} & #4 \\\\
-    \\end{tabularx}
-    \\vspace{0.3em}
+% ============================================
+
+% 带图标的节标题
+\\newcommand{\\logosection}[2]{%
+  \\section{\\texorpdfstring{\\makebox[\\widthof{\\faGraduationCap}][c]{\\color{ICBlue}#1}\\ }{} #2}
 }
 
-\\newcommand{\\resumeItem}[1]{
-    \\item #1
+% 日期范围
+\\newcommand{\\dateRange}[2]{
+  {#1 -- \\makebox[\\widthof{#1}][s]{#2}}
 }
 
-\\newcommand{\\skillItem}[2]{
-    \\textbf{#1}: #2
+% 带日期的行
+\\newcommand{\\datedline}[2]{%
+  {\\par #1 \\hfill #2 \\par}%
 }
+
+% 姓名
+\\newcommand{\\name}[1]{
+  \\centerline{\\LARGE\\bfseries{#1}}
+  \\vspace{1.2ex}
+}
+
+% 联系信息
+\\newcommand{\\contactInfo}[3]{
+  \\centerline{
+    \\normalsize{
+      {\\color{ICBlue}\\faPhone*}\\ {#1} \\quad
+      {\\color{ICBlue}\\faEnvelope}\\ \\href{mailto:{#2}}{#2} \\quad
+      {\\color{ICBlue}\\faMapMarker*}\\ {#3}
+    }
+  }
+}
+
+% 简单联系信息
+\\newcommand{\\basicContactInfo}[2]{
+  \\centerline{
+    \\normalsize{
+      {\\color{ICBlue}\\faPhone*}\\ {#1} \\quad
+      {\\color{ICBlue}\\faEnvelope}\\ \\href{mailto:{#2}}{#2}
+    }
+  }
+}
+
+% 双栏信息
+\\newcommand{\\biInfo}[2]{
+  {#1 \\quad #2}
+}
+
+% 三栏信息
+\\newcommand{\\tripleInfo}[3]{
+  {#1 \\quad #2 \\quad #3}
+}
+
+\\renewcommand{\\baselinestretch}{1.05}
 
 % ============================================
 % 文档开始
 % ============================================
 \\begin{document}
+\\pagenumbering{gobble}
 
 % ============================================
-% 个人信息区域
+% 个人信息
 % ============================================
-\\begin{center}
-    {\\Huge\\bfseries\\color{primary} ${name}}
-    
-    \\vspace{0.5em}
-    
+\\name{${name}}
 `
 
-  // 添加联系信息行
-  const contactItems: string[] = []
-  if (phone) contactItems.push(`\\faPhone\\ ${phone}`)
-  if (email) contactItems.push(`\\faEnvelope\\ \\href{mailto:${email}}{${email}}`)
-  if (location) contactItems.push(`\\faMapMarker*\\ ${location}`)
-
-  if (contactItems.length > 0) {
-    latex += `    ${contactItems.join(" \\quad | \\quad ")}\n`
+  // 联系信息
+  if (phone && email && location) {
+    latex += `\\contactInfo{${phone}}{${email}}{${location}}
+`
+  } else if (phone && email) {
+    latex += `\\basicContactInfo{${phone}}{${email}}
+`
+  } else if (phone || email) {
+    latex += `\\centerline{\\normalsize{`
+    if (phone) latex += `{\\color{ICBlue}\\faPhone*}\\ ${phone}`
+    if (phone && email) latex += ` \\quad `
+    if (email) latex += `{\\color{ICBlue}\\faEnvelope}\\ \\href{mailto:${email}}{${escapeLatex(email)}}`
+    latex += `}}
+`
   }
 
-  // 添加其他个人信息
+  // 额外信息行
   const extraInfo: string[] = []
   if (gender) extraInfo.push(`性别: ${gender}`)
   if (politicalStatus) extraInfo.push(`政治面貌: ${politicalStatus}`)
+  if (expectedPosition) extraInfo.push(`求职意向: ${expectedPosition}`)
 
   if (extraInfo.length > 0) {
-    latex += `    
-    \\vspace{0.3em}
-    
-    ${extraInfo.join(" \\quad | \\quad ")}
+    latex += `\\vspace{0.5ex}
+\\centerline{\\normalsize{${extraInfo.join(" \\quad | \\quad ")}}}
 `
   }
 
-  latex += `\\end{center}
-
-\\vspace{0.5em}
-
+  latex += `
 `
-
-  // ============================================
-  // 求职期望
-  // ============================================
-  if (expectedPosition || expectedSalary || expectedLocation) {
-    latex += `% ============================================
-% 求职期望
-% ============================================
-\\section{求职期望}
-
-\\begin{tabularx}{\\textwidth}{@{}X X X@{}}
-`
-    if (expectedPosition) latex += `    \\textbf{期望职位:} ${expectedPosition}`
-    if (expectedSalary) latex += ` & \\textbf{期望薪资:} ${expectedSalary}`
-    if (expectedLocation) latex += ` & \\textbf{期望地点:} ${expectedLocation}`
-    latex += ` \\\\
-\\end{tabularx}
-
-\\vspace{0.5em}
-
-`
-  }
 
   // ============================================
   // 教育经历
@@ -216,7 +263,7 @@ export function generateLatexResume(resumeData: ResumeData): string {
     latex += `% ============================================
 % 教育经历
 % ============================================
-\\section{教育经历}
+\\logosection{\\faGraduationCap}{教育经历}
 
 `
     education.forEach((edu) => {
@@ -225,19 +272,15 @@ export function generateLatexResume(resumeData: ResumeData): string {
       const degree = escapeLatex(edu.degree)
       const rank = escapeLatex(edu.rank)
       const startDate = formatDateForLatex(edu.startDate)
-      const endDate = formatDateForLatex(edu.endDate)
+      const endDate = formatDateForLatex(edu.endDate) || "至今"
 
-      const dateRange = startDate && endDate
-        ? `${startDate} -- ${endDate}`
-        : startDate || endDate || ""
-      const degreeAndMajor = [degree, major].filter(Boolean).join(" · ")
-
-      latex += `\\resumeSubheading
-    {${school || "学校名称"}}
-    {${dateRange}}
-    {${degreeAndMajor}}
-    {${rank ? "排名: " + rank : ""}}
-
+      latex += `\\datedline{\\textbf{${school || "学校名称"}}}{\\dateRange{${startDate}}{${endDate}}}
+`
+      if (degree || major) {
+        latex += `\\datedline{\\tripleInfo{${major || ""}}{${degree || ""}}{${rank ? "排名: " + rank : ""}}}{${location || ""}}
+`
+      }
+      latex += `
 `
     })
   }
@@ -249,29 +292,21 @@ export function generateLatexResume(resumeData: ResumeData): string {
     latex += `% ============================================
 % 工作/实习经历
 % ============================================
-\\section{工作/实习经历}
+\\logosection{\\faSuitcase}{工作/实习经历}
 
 `
     workExperience.forEach((work) => {
       const company = escapeLatex(work.company)
       const position = escapeLatex(work.position)
       const startDate = formatDateForLatex(work.startDate)
-      const endDate = formatDateForLatex(work.endDate)
-      const description = escapeLatex(work.description)
+      const endDate = formatDateForLatex(work.endDate) || "至今"
+      const description = work.description || ""
 
-      const dateRange = startDate && endDate
-        ? `${startDate} -- ${endDate}`
-        : startDate || endDate || ""
-
-      latex += `\\resumeSubheading
-    {${company || "公司名称"}}
-    {${dateRange}}
-    {${position || "职位"}}
-    {}
+      latex += `\\datedline{\\textbf{${company || "公司名称"}}}{\\dateRange{${startDate}}{${endDate}}}
+\\datedline{${position || "职位"}}{}
 
 `
       if (description) {
-        // 将描述分割成多行
         const descLines = description
           .split(/[;；。\n]+/)
           .filter((line) => line.trim())
@@ -280,14 +315,15 @@ export function generateLatexResume(resumeData: ResumeData): string {
           latex += `\\begin{itemize}
 `
           descLines.forEach((line) => {
-            latex += `    \\resumeItem{${escapeLatex(line.trim())}}
+            latex += `  \\item ${escapeLatex(line.trim())}
 `
           })
           latex += `\\end{itemize}
-
 `
         }
       }
+      latex += `
+`
     })
   }
 
@@ -298,77 +334,77 @@ export function generateLatexResume(resumeData: ResumeData): string {
     latex += `% ============================================
 % 项目经历
 % ============================================
-\\section{项目经历}
+\\logosection{\\faWrench}{项目经历}
 
 `
     projects.forEach((project) => {
       const projectName = escapeLatex(project.projectName)
       const role = escapeLatex(project.role)
       const projectTime = escapeLatex(project.projectTime)
-      const projectDesc = escapeLatex(project.projectDesc)
-      const responsibilities = escapeLatex(project.responsibilities)
+      const projectDesc = project.projectDesc || ""
+      const responsibilities = project.responsibilities || ""
 
-      latex += `\\resumeSubheading
-    {${projectName || "项目名称"}}
-    {${projectTime}}
-    {${role || "角色"}}
-    {}
+      latex += `\\datedline{\\textbf{${projectName || "项目名称"}}}{${projectTime}}
+\\datedline{\\biInfo{${role || "角色"}}{}}{}
 
 `
-      // 项目描述
       if (projectDesc) {
-        latex += `\\textbf{项目描述:} ${projectDesc}
+        latex += `${escapeLatex(projectDesc)}
 
 `
       }
 
-      // 职责描述
       if (responsibilities) {
         const respLines = responsibilities
           .split(/[;；。\n]+/)
           .filter((line) => line.trim())
 
         if (respLines.length > 0) {
-          latex += `\\textbf{主要职责:}
-\\begin{itemize}
+          latex += `\\begin{itemize}
 `
           respLines.forEach((line) => {
-            latex += `    \\resumeItem{${escapeLatex(line.trim())}}
+            latex += `  \\item ${escapeLatex(line.trim())}
 `
           })
           latex += `\\end{itemize}
-
 `
         }
       }
+      latex += `
+`
     })
   }
 
   // ============================================
-  // 技能信息
+  // 专业技能
   // ============================================
   if (skills && skills.length > 0) {
-    // 先收集有效的技能条目
-    const skillItems: string[] = []
-    skills.forEach((skill) => {
-      const skillName = escapeLatex(skill.name)
-      const level = escapeLatex(skill.level)
-
-      if (skillName) {
-        skillItems.push(`    \\item \\skillItem{${skillName}}{${level || "熟练"}}`)
-      }
+    // 按技能等级排序（假设等级越高越重要）
+    const sortedSkills = [...skills].sort((a, b) => {
+      const levelOrder = { "精通": 4, "熟练": 3, "了解": 2, "入门": 1 }
+      const levelA = levelOrder[a.level as keyof typeof levelOrder] || 0
+      const levelB = levelOrder[b.level as keyof typeof levelOrder] || 0
+      return levelB - levelA // 降序排列
     })
 
-    // 只有在有有效条目时才生成列表
-    if (skillItems.length > 0) {
-      latex += `% ============================================
-% 技能信息
-% ============================================
-\\section{专业技能}
+    // 提取技能名称
+    const skillNames = sortedSkills
+      .map(skill => escapeLatex(skill.name))
+      .filter(name => name)
 
-\\begin{itemize}
-${skillItems.join("\n")}
-\\end{itemize}
+    if (skillNames.length > 0) {
+      // 将技能名称连接成一行或多行
+      const skillsText = skillNames.join("、")
+      
+      latex += `% ============================================
+% 专业技能
+% ============================================
+\\logosection{\\faCogs}{专业技能}
+
+${skillsText}
+
+
+
 
 `
     }
@@ -378,7 +414,6 @@ ${skillItems.join("\n")}
   // 语言能力
   // ============================================
   if (languages && languages.length > 0) {
-    // 先收集有效的语言条目
     const langItems: string[] = []
     languages.forEach((lang) => {
       const langName = escapeLatex(lang.name)
@@ -386,27 +421,38 @@ ${skillItems.join("\n")}
       const certificate = escapeLatex(lang.certificate)
 
       if (langName) {
-        let langStr = `\\skillItem{${langName}}{${proficiency || ""}}`
-        if (certificate) {
-          langStr += ` (${certificate})`
-        }
-        langItems.push(`    \\item ${langStr}`)
+        let langStr = langName
+        if (proficiency) langStr += ` - ${proficiency}`
+        if (certificate) langStr += ` (${certificate})`
+        langItems.push(`  \\item ${langStr}`)
       }
     })
 
-    // 只有在有有效条目时才生成列表
     if (langItems.length > 0) {
       latex += `% ============================================
 % 语言能力
 % ============================================
-\\section{语言能力}
-
-\\begin{itemize}
+\\logosection{\\faLanguage}{语言能力}
+\\begin{itemize}[parsep=0.5ex]
 ${langItems.join("\n")}
 \\end{itemize}
 
 `
     }
+  }
+
+  // ============================================
+  // 自我描述
+  // ============================================
+  if (selfIntroText) {
+    latex += `% ============================================
+% 自我描述
+% ============================================
+\\logosection{\\faUser}{自我描述}
+
+${selfIntroText}
+
+`
   }
 
   // ============================================
@@ -421,27 +467,13 @@ ${langItems.join("\n")}
         latex += `% ============================================
 % ${fieldName}
 % ============================================
-\\section{${fieldName}}
+\\logosection{\\faInfo}{${fieldName}}
 
 ${fieldContent}
 
 `
       }
     })
-  }
-
-  // ============================================
-  // 自我描述
-  // ============================================
-  if (selfIntroText) {
-    latex += `% ============================================
-% 自我描述
-% ============================================
-\\section{自我描述}
-
-${selfIntroText}
-
-`
   }
 
   // 文档结束

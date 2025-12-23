@@ -35,7 +35,7 @@ import {
   type CustomField,
   defaultResumeData,
 } from "~types/resume"
-import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
+import { useResumeTemplates } from "~hooks/useResumeTemplates"
 import { OptimizeDialog } from "./OptimizeDialog"
 
 /**
@@ -224,10 +224,14 @@ function DynamicListItem<T extends Record<string, any>>({
  */
 export function ResumeForm() {
   const formRef = useRef<HTMLDivElement>(null)
-  const [resumeData, setResumeData, isLoading] = useStorage<ResumeData>(
-    STORAGE_KEYS.RESUME_DATA,
-    defaultResumeData
-  )
+
+  // 使用模板系统
+  const {
+    isLoading,
+    currentResumeData,
+    currentTemplateId,
+    updateCurrentResumeData,
+  } = useResumeTemplates()
 
   // 本地表单状态
   const [formData, setFormData] = useState<ResumeData>(defaultResumeData)
@@ -241,32 +245,34 @@ export function ResumeForm() {
 
   // 从存储加载数据 - 与默认值合并以确保所有字段存在
   useEffect(() => {
-    if (!isLoading && resumeData) {
+    if (!isLoading && currentResumeData) {
       // 深度合并存储数据和默认值，确保所有字段都存在
       setFormData({
-        personalInfo: { ...defaultResumeData.personalInfo, ...resumeData.personalInfo },
-        jobExpectation: { ...defaultResumeData.jobExpectation, ...resumeData.jobExpectation },
-        selfIntro: resumeData.selfIntro ?? defaultResumeData.selfIntro,
-        education: resumeData.education ?? defaultResumeData.education,
-        workExperience: resumeData.workExperience ?? defaultResumeData.workExperience,
-        projects: resumeData.projects ?? defaultResumeData.projects,
-        skills: resumeData.skills ?? defaultResumeData.skills,
-        languages: resumeData.languages ?? defaultResumeData.languages,
-        customFields: resumeData.customFields ?? defaultResumeData.customFields,
+        personalInfo: { ...defaultResumeData.personalInfo, ...currentResumeData.personalInfo },
+        jobExpectation: { ...defaultResumeData.jobExpectation, ...currentResumeData.jobExpectation },
+        selfIntro: currentResumeData.selfIntro ?? defaultResumeData.selfIntro,
+        education: currentResumeData.education ?? defaultResumeData.education,
+        workExperience: currentResumeData.workExperience ?? defaultResumeData.workExperience,
+        projects: currentResumeData.projects ?? defaultResumeData.projects,
+        skills: currentResumeData.skills ?? defaultResumeData.skills,
+        languages: currentResumeData.languages ?? defaultResumeData.languages,
+        customFields: currentResumeData.customFields ?? defaultResumeData.customFields,
       })
+      // 切换模板时重置 dirty 状态
+      setIsDirty(false)
     }
-  }, [isLoading, resumeData])
+  }, [isLoading, currentResumeData, currentTemplateId])
 
   // 自动保存
   useEffect(() => {
     if (isDirty && !isLoading) {
       const timer = setTimeout(() => {
-        setResumeData(formData)
+        updateCurrentResumeData(formData)
         setIsDirty(false)
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [formData, isDirty, isLoading, setResumeData])
+  }, [formData, isDirty, isLoading, updateCurrentResumeData])
 
   // 更新个人信息
   const updatePersonalInfo = useCallback(

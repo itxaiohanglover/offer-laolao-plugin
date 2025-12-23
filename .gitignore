@@ -103,3 +103,5 @@ Desktop.ini
 *.tar.gz
 *.rar
 !docs/public/download/*.zip
+
+.cursorignore

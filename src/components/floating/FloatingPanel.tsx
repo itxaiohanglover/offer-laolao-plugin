@@ -8,9 +8,11 @@ import { ResumeForm } from "~features/popup/ResumeForm"
 import { ResumeUpload } from "~features/popup/ResumeUpload"
 import { ExportDialog } from "~features/popup/ExportDialog"
 import { ModelSettingsForm, ParseSettingsForm, UISettingsForm } from "~features/popup/settings"
+import { TemplateSelector } from "~components/common/TemplateSelector"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~components/ui/tabs"
 import { Button } from "~components/ui/button"
 import { useStorage, STORAGE_KEYS } from "~hooks/useStorage"
+import { useResumeTemplates } from "~hooks/useResumeTemplates"
 import { defaultResumeData, type ResumeData } from "~types/resume"
 import { defaultUISettings, type UISettings, type FloatingPosition } from "~types/settings"
 import type { ParsedResumeData } from "~services/resume-parse"
@@ -126,11 +128,19 @@ export function FloatingPanel({ onClose }: FloatingPanelProps) {
   const dragOffset = useRef({ x: 0, y: 0 })
   const panelRef = useRef<HTMLDivElement>(null)
 
-  // 简历数据存储
-  const [resumeData, setResumeData] = useStorage<ResumeData>(
-    STORAGE_KEYS.RESUME_DATA,
-    defaultResumeData
-  )
+  // 使用模板系统
+  const {
+    isLoading: isTemplatesLoading,
+    templates,
+    currentTemplateId,
+    currentResumeData,
+    switchTemplate,
+    addTemplate,
+    renameTemplate,
+    deleteTemplate,
+    duplicateTemplate,
+    updateCurrentResumeData,
+  } = useResumeTemplates()
 
   // UI 设置存储
   const [uiSettings, setUISettings] = useStorage<UISettings>(
@@ -199,12 +209,12 @@ export function FloatingPanel({ onClose }: FloatingPanelProps) {
   // 处理解析数据填充
   const handleParsedData = useCallback(
     (parsedData: ParsedResumeData) => {
-      const newResumeData = convertParsedDataToResumeData(parsedData, resumeData)
-      setResumeData(newResumeData)
+      const newResumeData = convertParsedDataToResumeData(parsedData, currentResumeData)
+      updateCurrentResumeData(newResumeData)
       setFillMessage("✓ 数据已填充到表单")
       setTimeout(() => setFillMessage(""), 3000)
     },
-    [resumeData, setResumeData]
+    [currentResumeData, updateCurrentResumeData]
   )
 
   // 处理保存设置
@@ -273,7 +283,7 @@ export function FloatingPanel({ onClose }: FloatingPanelProps) {
       <ExportDialog
         isOpen={isExportDialogOpen}
         onClose={() => setIsExportDialogOpen(false)}
-        resumeData={resumeData}
+        resumeData={currentResumeData}
       />
 
       {/* 可拖拽的标题栏 */}
@@ -325,6 +335,23 @@ export function FloatingPanel({ onClose }: FloatingPanelProps) {
           {/* Resume Content */}
           <TabsContent value="resume">
             <div className="plasmo-py-2 plasmo-space-y-4">
+              {/* 模板选择器 */}
+              {isTemplatesLoading ? (
+                <div className="plasmo-p-3 plasmo-bg-muted/30 plasmo-rounded-lg plasmo-text-center plasmo-text-sm plasmo-text-muted-foreground">
+                  加载模板中...
+                </div>
+              ) : (
+                <TemplateSelector
+                  templates={templates}
+                  currentTemplateId={currentTemplateId}
+                  onSwitch={switchTemplate}
+                  onAdd={addTemplate}
+                  onRename={renameTemplate}
+                  onDelete={deleteTemplate}
+                  onDuplicate={duplicateTemplate}
+                />
+              )}
+
               {/* 简历上传区域 */}
               <div className="plasmo-p-3 plasmo-bg-muted/30 plasmo-rounded-lg">
                 <h4 className="plasmo-text-sm plasmo-font-medium plasmo-mb-3 plasmo-flex plasmo-items-center plasmo-gap-2">
@@ -372,20 +399,6 @@ export function FloatingPanel({ onClose }: FloatingPanelProps) {
               {/* 简历解析配置 */}
               <ParseSettingsForm />
 
-              {/* 保存设置按钮 */}
-              <div className="plasmo-pt-2">
-                <Button
-                  onClick={handleSaveSettings}
-                  className="plasmo-w-full plasmo-bg-primary hover:plasmo-bg-primary/90"
-                >
-                  💾 保存设置
-                </Button>
-                {saveMessage && (
-                  <p className="plasmo-text-center plasmo-text-sm plasmo-text-green-600 plasmo-mt-2">
-                    {saveMessage}
-                  </p>
-                )}
-              </div>
 
               {/* 提示 */}
               <div className="plasmo-mt-4 plasmo-p-3 plasmo-bg-muted/30 plasmo-rounded-lg">

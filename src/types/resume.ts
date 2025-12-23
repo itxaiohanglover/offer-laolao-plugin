@@ -161,3 +161,51 @@ export interface OptimizeTask {
   context?: Record<string, string>
 }
 
+/**
+ * 简历模板
+ */
+export interface ResumeTemplate {
+  id: string
+  name: string
+  data: ResumeData
+  createdAt: number
+  updatedAt: number
+}
+
+/**
+ * 简历模板存储结构
+ */
+export interface ResumeTemplatesStorage {
+  templates: ResumeTemplate[]
+  currentTemplateId: string
+}
+
+/**
+ * 生成唯一ID
+ */
+export function generateTemplateId(): string {
+  return `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
+
+/**
+ * 创建默认简历模板
+ */
+export function createDefaultTemplate(name: string = "默认简历"): ResumeTemplate {
+  const now = Date.now()
+  return {
+    id: generateTemplateId(),
+    name,
+    data: { ...defaultResumeData },
+    createdAt: now,
+    updatedAt: now,
+  }
+}
+
+/**
+ * 默认简历模板存储
+ */
+export const defaultResumeTemplatesStorage: ResumeTemplatesStorage = {
+  templates: [],
+  currentTemplateId: "",
+}
+
