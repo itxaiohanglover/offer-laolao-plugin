@@ -96,5 +96,6 @@ export const STORAGE_KEYS = {
   MODEL_SETTINGS: "modelSettings",
   PARSE_SETTINGS: "parseSettings",
   UI_SETTINGS: "uiSettings",
+  STAR_GATE: "starGate",
 } as const
 

@@ -11,6 +11,7 @@ import {
 } from "~components/ui/select"
 import { DatePicker } from "~components/ui/date-picker"
 import { FieldFillButton } from "~components/ui/field-fill-button"
+import { StarGateDialog } from "~components/common/StarGateDialog"
 import {
   basicInfoFields,
   jobExpectationFields,
@@ -36,6 +37,7 @@ import {
   defaultResumeData,
 } from "~types/resume"
 import { useResumeTemplates } from "~hooks/useResumeTemplates"
+import { useStarGate } from "~hooks/useStarGate"
 import { OptimizeDialog } from "./OptimizeDialog"
 
 /**
@@ -233,12 +235,18 @@ export function ResumeForm() {
     updateCurrentResumeData,
   } = useResumeTemplates()
 
+  // Star Gate 验证
+  const { isUnlocked, confirmStar } = useStarGate()
+
   // 本地表单状态
   const [formData, setFormData] = useState<ResumeData>(defaultResumeData)
   const [isDirty, setIsDirty] = useState(false)
 
   // 优化对话框状态
   const [isOptimizeDialogOpen, setIsOptimizeDialogOpen] = useState(false)
+
+  // Star Gate 对话框状态
+  const [isStarGateDialogOpen, setIsStarGateDialogOpen] = useState(false)
 
   // 重置消息状态
   const [resetMessage, setResetMessage] = useState("")
@@ -720,10 +728,16 @@ export function ResumeForm() {
         <div className="plasmo-flex plasmo-gap-2">
           <Button
             type="button"
-            onClick={() => setIsOptimizeDialogOpen(true)}
+            onClick={() => {
+              if (isUnlocked) {
+                setIsOptimizeDialogOpen(true)
+              } else {
+                setIsStarGateDialogOpen(true)
+              }
+            }}
             className="plasmo-flex-1 plasmo-bg-gradient-to-r plasmo-from-purple-600 plasmo-to-blue-600 hover:plasmo-from-purple-700 hover:plasmo-to-blue-700"
           >
-            ✨ AI 一键优化简历
+            ✨ AI 一键优化简历 {!isUnlocked && "🔒"}
           </Button>
           <Button
             type="button"
@@ -740,6 +754,19 @@ export function ResumeForm() {
           </p>
         )}
       </div>
+
+      {/* Star Gate 对话框 */}
+      <StarGateDialog
+        isOpen={isStarGateDialogOpen}
+        onClose={() => setIsStarGateDialogOpen(false)}
+        onConfirm={() => {
+          confirmStar()
+          setIsStarGateDialogOpen(false)
+          // 确认后自动打开优化对话框
+          setIsOptimizeDialogOpen(true)
+        }}
+        featureName="AI 优化功能"
+      />
 
       {/* 优化对话框 */}
       <OptimizeDialog
