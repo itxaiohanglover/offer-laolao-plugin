@@ -179,14 +179,9 @@ function IndexPopup() {
             className="plasmo-w-10 plasmo-h-10 plasmo-bg-white/20 plasmo-rounded-lg plasmo-flex plasmo-items-center plasmo-justify-center"
           />
 
-          <div>
-            <h1 className="plasmo-text-lg plasmo-font-bold plasmo-text-white">
-              Offer 捞捞
-            </h1>
-            <p className="plasmo-text-xs plasmo-text-white/80">
-              简历自动填写助手
-            </p>
-          </div>
+          <h1 className="plasmo-text-lg plasmo-font-bold plasmo-text-white">
+            Offer 捞捞
+          </h1>
         </div>
       </div>
 

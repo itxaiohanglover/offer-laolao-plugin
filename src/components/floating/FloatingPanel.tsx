@@ -298,12 +298,9 @@ export function FloatingPanel({ onClose }: FloatingPanelProps) {
               alt="Offer 捞捞"
               className="plasmo-w-10 plasmo-h-10 plasmo-bg-white/20 plasmo-rounded-lg plasmo-flex plasmo-items-center plasmo-justify-center"
             />
-            <div>
-              <h1 className="plasmo-text-sm plasmo-font-bold plasmo-text-white">
-                Offer 捞捞
-              </h1>
-              <p className="plasmo-text-xs plasmo-text-white/70">悬浮模式</p>
-            </div>
+            <h1 className="plasmo-text-sm plasmo-font-bold plasmo-text-white">
+              Offer 捞捞
+            </h1>
           </div>
           <div className="plasmo-flex plasmo-items-center plasmo-gap-1">
             <button
