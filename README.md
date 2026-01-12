@@ -13,6 +13,7 @@
 
 ![Version](https://img.shields.io/badge/Version-1.0-blue)
 ![Chrome](https://img.shields.io/badge/Chrome-Extension-green)
+[![Edge Add-ons](https://img.shields.io/badge/Edge-Add--ons-blue?logo=microsoftedge)](https://microsoftedge.microsoft.com/addons/detail/bhebbhnjfageofcfejjbgneclnmakpgp)
 ![Manifest](https://img.shields.io/badge/Manifest-V3-orange)
 
 🌐 **Online Access**: [https://offer-laolao-plugin.vercel.app](https://offer-laolao-plugin.vercel.app)
@@ -96,16 +97,19 @@ Supports multiple domestic large model service providers for intelligent resume 
   - Supports Chinese (using ctex package)
   - Professional typesetting, suitable for academic and technical job applications
   - Includes complete style definitions and comments
-- **🤖 AI-generated Resume Introduction**: Call AI models to intelligently generate professional self-introductions
-  - Generated based on educational background, work experience, project experience, and skills in the resume
-  - Supports copying to clipboard
-  - Supports one-click filling into self-description field
-  - Supports downloading as `.txt` file
-- **Resume Introduction Prompt Export**: Export structured prompt templates, supporting `.md`/`.txt`
-  - Includes personal basic information prompts
-  - Work experience question templates
-  - Project experience inquiry framework
-  - Skill assessment guidance words
+
+
+### 📑 Multiple Resume Templates
+
+- **Multi-template management**: Support storing and managing multiple resume templates
+- **Quick switching**: One-click switch between different resume templates
+- **Template operations**:
+  - ➕ Create new template
+  - ✏️ Rename template
+  - 📋 Duplicate template
+  - 🗑️ Delete template (when more than one exists)
+- **Smart migration**: Automatically migrates old single-resume data to the new multi-template system
+- **Separate storage**: Each template maintains independent resume data
 
 ### 💾 Data Persistence
 
@@ -115,19 +119,14 @@ Supports multiple domestic large model service providers for intelligent resume 
 - **Data reset**: One-click clearing of all resume data to start fresh
 - **Automatic setting saving**: Settings page configurations are automatically saved
 
-## 🏗️ Project Architecture
+### ⭐ GitHub Star Unlock
 
-```
-super_resume/
-├── docs                       # Introduction pages
-├── manifest.json              # Chrome extension configuration file (Manifest V3)
-├── icons/                     # Extension icons
-├── src/
-│   ├── background/            # Background service scripts
-│   ├── content/               # Content scripts (injected into webpages)
-│   └── popup/                 # Popup pages
-└── README.md
-```
+- **Trust-based verification**: Star our GitHub project to unlock advanced features
+- **One-time unlock**: After confirming Star once, all advanced features are permanently available
+- **Graceful prompts**: Friendly dialog guides users to support the project
+- **Affected features**: AI resume optimization requires Star verification
+
+
 
 ## 📦 Installation Guide
 
@@ -137,36 +136,59 @@ super_resume/
 
    ```bash
    git clone https://github.com/itxaiohanglover/offer-laolao-plugin.git
+   cd offer-laolao-plugin
    ```
 
    Or directly download the ZIP and extract it
 
-2. **Open Chrome extension management page**
+2. **Install dependencies and build**
+
+   ```bash
+   # Install pnpm (if not already installed)
+   npm install -g pnpm
+
+   # Install project dependencies
+   pnpm install
+
+   # Build the extension
+   pnpm build
+   ```
+
+   After building, a `build/chrome-mv3-prod` folder will be generated
+
+3. **Open Chrome extension management page**
 
    - Enter in address bar: `chrome://extensions/`
    - Or through menu: More Tools → Extensions
 
-3. **Enable Developer Mode**
+4. **Enable Developer Mode**
 
    - Click the "Developer Mode" switch in the top right corner
 
-4. **Load the extension**
+5. **Load the extension**
 
    - Click "Load unpacked extension"
-   - Select the project root directory (the folder containing `manifest.json`)
+   - Select the `build/chrome-mv3-prod` folder
 
-5. **Installation complete**
+6. **Installation complete**
    - The extension icon will appear in the browser toolbar
    - Click the icon to open the resume filling assistant
 
-### Method 2: Edge Browser Installation
+### Method 2: Install from Edge Add-ons Store (Recommended)
 
-Edge browser also supports Chrome extensions:
+1. Visit [Microsoft Edge Add-ons Store](https://microsoftedge.microsoft.com/addons/detail/bhebbhnjfageofcfejjbgneclnmakpgp)
+2. Click "Get" button to install
+3. After installation, the extension icon will appear in the browser toolbar
 
-1. Open `edge://extensions/`
-2. Enable "Developer Mode"
-3. Click "Load unpacked extension"
-4. Select the project directory
+### Method 3: Edge Browser Developer Mode
+
+Edge browser also supports loading unpacked extensions:
+
+1. Follow steps 1-2 from Method 1 to download and build the project
+2. Open `edge://extensions/`
+3. Enable "Developer Mode"
+4. Click "Load unpacked extension"
+5. Select the `build/chrome-mv3-prod` folder
 
 ## 🚀 Usage Tutorial
 
@@ -181,7 +203,16 @@ Edge browser also supports Chrome extensions:
    - Purchase resume parsing service from [Alibaba Cloud Market](https://market.aliyun.com/detail/cmapi034316)
    - Enter API URL and APP Code
 
-### Step 2: Fill or Import Resume
+### Step 2: Manage Resume Templates
+
+1. In the "📝 Resume Filling" tab, find the template selector at the top
+2. **Switch templates**: Use the dropdown to select different resume templates
+3. **Create new template**: Click the "+" button to create a new blank template
+4. **Rename template**: Click the "✏️" button to modify the template name
+5. **Duplicate template**: Click the "📋" button to create a copy of the current template
+6. **Delete template**: Click the "🗑️" button to remove a template (requires at least 2 templates)
+
+### Step 3: Fill or Import Resume
 
 #### Method A: Intelligent Upload Parsing
 
@@ -201,17 +232,20 @@ Edge browser also supports Chrome extensions:
 1. If you have a previously exported JSON file
 2. Directly drag and drop it into the upload area to import
 
-### Step 3: AI Resume Optimization (Optional)
+### Step 4: AI Resume Optimization (Optional)
 
 1. Ensure AI model API Key is configured
 2. Fill in descriptive content in the resume (self-introduction, job description, project description, etc.)
-3. Click the "✨ AI Optimize" button
-4. The system will optimize all descriptive content one by one
-5. Optimized content will be automatically filled back into the form
+3. Click the "✨ AI One-click Resume Optimization" button
+4. **First-time users**: A dialog will prompt you to Star our GitHub project to unlock this feature
+   - Click the GitHub link to visit and Star the project
+   - Click "I have Starred, unlock feature" to confirm
+5. The system will optimize all descriptive content one by one
+6. Optimized content will be automatically filled back into the form
 
-### Step 4: Fill Resume on Recruitment Website
+### Step 5: Fill Resume on Recruitment Website
 
-#### One-click Pre-fill (Recommended)
+#### One-click Pre-fill (Coming Soon!!!)
 
 1. Open the resume filling page of the target recruitment website
 2. Click the extension icon to open the popup
@@ -227,7 +261,7 @@ Edge browser also supports Chrome extensions:
 4. The field value will be precisely filled in
 5. Press `Esc` to cancel operation
 
-### Step 5: Export Backup
+### Step 6: Export Backup
 
 1. Click the "📤 Export" button
 2. Select export format:
