@@ -134,7 +134,7 @@
 1. **下载项目**
 
    ```bash
-   git clone https://github.com/itxaiohanglover/offer-laolao-plugin.git
+   git clone https://github.com/open-agent-power/offer-laolao-plugin.git
    cd offer-laolao-plugin
    ```
 
@@ -318,9 +318,9 @@ Edge 浏览器同样支持加载未打包的扩展：
 
 欢迎提交 Issue 和 Pull Request！
 
-- 🐛 发现 Bug？请提交 [Issue](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
-- 💡 有新想法？欢迎提交 [Feature Request](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
-- 🔧 想贡献代码？欢迎提交 [Pull Request](https://github.com/itxaiohanglover/offer-laolao-plugin/pulls)
+- 🐛 发现 Bug？请提交 [Issue](https://github.com/open-agent-power/offer-laolao-plugin/issues)
+- 💡 有新想法？欢迎提交 [Feature Request](https://github.com/open-agent-power/offer-laolao-plugin/issues)
+- 🔧 想贡献代码？欢迎提交 [Pull Request](https://github.com/open-agent-power/offer-laolao-plugin/pulls)
 
 ---
 

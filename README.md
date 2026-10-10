@@ -135,7 +135,7 @@ Supports multiple domestic large model service providers for intelligent resume 
 1. **Download the project**
 
    ```bash
-   git clone https://github.com/itxaiohanglover/offer-laolao-plugin.git
+   git clone https://github.com/open-agent-power/offer-laolao-plugin.git
    cd offer-laolao-plugin
    ```
 
@@ -319,9 +319,9 @@ This project is licensed under the [MIT License](LICENSE).
 
 Welcome to submit Issues and Pull Requests!
 
-- 🐛 Found a bug? Please submit an [Issue](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
-- 💡 Have a new idea? Welcome to submit a [Feature Request](https://github.com/itxaiohanglover/offer-laolao-plugin/issues)
-- 🔧 Want to contribute code? Welcome to submit a [Pull Request](https://github.com/itxaiohanglover/offer-laolao-plugin/pulls)
+- 🐛 Found a bug? Please submit an [Issue](https://github.com/open-agent-power/offer-laolao-plugin/issues)
+- 💡 Have a new idea? Welcome to submit a [Feature Request](https://github.com/open-agent-power/offer-laolao-plugin/issues)
+- 🔧 Want to contribute code? Welcome to submit a [Pull Request](https://github.com/open-agent-power/offer-laolao-plugin/pulls)
 
 ---
 
